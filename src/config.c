@@ -101,11 +101,17 @@ void build_config(Config *config, char *key, char *value) {
         config->output_filename_Gaussian = dup(trim(replace(value, '\'', ' ')));
     } else if(strcmp(key, "output_filename_Rician") == 0) {
         config->output_filename_Rician = dup(trim(replace(value, '\'', ' ')));
+    } else if(strcmp(key, "csv_delimiter") == 0) {
+        config->csv_delimiter = trim(replace(value, '\'', ' '))[0];
     } else {
 #ifdef DEBUG
         printf("Unknown key: '%s', value: '%s'\n", key, value);
 #endif
     }
+}
+
+void add_defaults(Config *config) {
+    config->csv_delimiter = ',';
 }
 
 int read_config(Config *config, char *filename) {
@@ -122,6 +128,8 @@ int read_config(Config *config, char *filename) {
     char *line = NULL;
     size_t num_bytes = 0;
     ssize_t read = 0;
+
+    add_defaults(config);
 
     while((read = getline(&line, &num_bytes, file)) != -1) {
         line = preprocess(line, num_bytes);
@@ -151,6 +159,7 @@ void print_config(Config *config) {
     printf("lpf_f = %lf\n", config->lpf_f);
     printf("lpf_f_SNR = %lf\n", config->lpf_f_SNR);
     printf("lpf_f_Rice = %lf\n", config->lpf_f_Rice);
+    printf("csv_delimiter = '%c'\n", config->csv_delimiter);
     printf("input_filename = '%s'\n", config->input_filename);
     printf("output_filename_Gaussian = '%s'\n", config->output_filename_Gaussian);
     printf("outut_filename_Rician = '%s'\n", config->output_filename_Rician);

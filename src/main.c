@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     }
     print_config(config);
 
-    Image *image = read_image(config->input_filename);
+    Image *image = read_image(config);
     if(!image) {
         printf("Couldn't load input file %s.\n", config->input_filename);
         return EXIT_FAILURE;

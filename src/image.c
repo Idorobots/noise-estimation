@@ -24,7 +24,7 @@ size_t count(char *string, size_t length, char character) {
     return count;
 }
 
-int get_size(char *filename, size_t *width, size_t *height) {
+int get_size(char *filename, char delimiter, size_t *width, size_t *height) {
     FILE *file = fopen(filename, "r");
 
     if(!file) {
@@ -42,7 +42,7 @@ int get_size(char *filename, size_t *width, size_t *height) {
     }
 
     // Get image width.
-    *width = 1 + count(line, num_bytes, ','); // FIXME This shouldn't be hardcoded.
+    *width = 1 + count(line, num_bytes, delimiter);
 
     // Get image height.
     for(size_t i = 1; ; i++) {
@@ -100,7 +100,8 @@ CvMat *read_data(char *filename, size_t width, size_t height) {
     return normalized;
 }
 
-Image *read_image(char *filename) {
+Image *read_image(Config *config) {
+    char *filename = config->input_filename;
     IplImage *image = NULL;
 
     char *extension = get_extension(filename);
@@ -116,7 +117,7 @@ Image *read_image(char *filename) {
         // We need to parse the CSV manually:
         size_t width = 0, height = 0;
 
-        if(get_size(filename, &width, &height) != -1) {
+        if(get_size(filename, config->csv_delimiter, &width, &height) != -1) {
 #ifdef DEBUG
             printf("width: %ld\nheight: %ld\n", width, height);
 #endif
