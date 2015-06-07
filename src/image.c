@@ -58,8 +58,38 @@ int get_size(char *filename, size_t *width, size_t *height) {
 
 CvMat *read_data(char *filename, size_t width, size_t height) {
     CvMat *data = cvCreateMat(height, width, CV_32F);
-    // TODO Actually read the data.
-    return data;
+
+    FILE *file = fopen(filename, "r");
+
+    if(!file) {
+        return NULL;
+    }
+
+    char *line = NULL;
+    size_t num_bytes = 0;
+    ssize_t read = 0;
+
+    for(size_t i = 0; i < height; ++i) {
+        if((read = getline(&line, &num_bytes, file)) != -1) {
+            char *rest = line;
+            for(size_t j = 0; j < width; ++j) {
+                cvmSet(data, i, j, strtof(rest, &rest));
+                rest++; // Skip the delimiter. // FIXME Actually do this properly.
+            }
+        }
+    }
+
+    double max;
+    cvMinMaxLoc(data, NULL, &max, NULL, NULL, NULL);
+
+#ifdef DEBUG
+    printf("max: %f\n", max);
+#endif
+
+    CvMat *normalized = cvCloneMat(data);
+    cvScale(data, normalized, 1.0/max, 0);
+    // FIXME Dispose of data.
+    return normalized;
 }
 
 IplImage *read_image(char *filename) {
