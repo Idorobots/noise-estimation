@@ -1,7 +1,9 @@
 RM = rm -f
 CC = gcc
-CFLAGS = -Isrc -Wall -Wextra -pedantic -std=c99
-LDLIBS = 
+#DEBUG = -DDEBUG
+CFLAGS = $(DEBUG) -Isrc -Wall -Wextra -pedantic -std=c99
+LDLIBS =
+
 
 VPATH = src
 
