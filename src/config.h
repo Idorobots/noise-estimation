@@ -1,9 +1,16 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include <stdlib.h>
+#define _POSIX_C_SOURCE 200809L
 
-typedef struct _Conf {
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define BUF_SIZE 256
+
+typedef struct _Config {
     long ex_filter_type;
     long ex_window_size;
     long ex_iterations;
@@ -15,8 +22,9 @@ typedef struct _Conf {
     char *input_filename;
     char *output_filename_Gaussian;
     char *output_filename_Rician;
-} Conf;
+} Config;
 
-Conf *read_config(char *filename);
+int read_config(Config *config, char *filename);
+void print_config(Config *config);
 
 #endif
