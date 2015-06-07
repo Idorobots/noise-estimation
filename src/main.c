@@ -18,6 +18,8 @@ int main(int argc, char **argv) {
         printf("Couldn't load config file %s.\n", conf_file);
         return EXIT_FAILURE;
     }
+    print_config(config);
+
 
     // TODO Implement the actual algorithm.
 

@@ -25,5 +25,6 @@ typedef struct _Config {
 } Config;
 
 int read_config(Config *config, char *filename);
+void print_config(Config *config);
 
 #endif

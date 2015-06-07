@@ -146,3 +146,15 @@ int read_config(Config *config, char *filename) {
 
     return 0;
 }
+
+void print_config(Config *config) {
+    printf("ex_filter_type = %ld\n", config->ex_filter_type);
+    printf("ex_window_size = %ld\n", config->ex_window_size);
+    printf("ex_iterations = %ld\n", config->ex_iterations);
+    printf("lpf_f = %lf\n", config->lpf_f);
+    printf("lpf_f_SNR = %lf\n", config->lpf_f_SNR);
+    printf("lpf_f_Rice = %lf\n", config->lpf_f_Rice);
+    printf("input_filename = '%s'\n", config->input_filename);
+    printf("output_filename_Gaussian = '%s'\n", config->output_filename_Gaussian);
+    printf("outut_filename_Rician = '%s'\n", config->output_filename_Rician);
+}
