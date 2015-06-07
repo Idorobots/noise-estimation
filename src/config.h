@@ -6,7 +6,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
+
+#include "utils.h"
 
 
 typedef struct _Config {

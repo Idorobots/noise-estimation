@@ -71,7 +71,7 @@ CvMat *normalize(CvMat *data) {
     return normalized;
 }
 
-CvMat *read_data(char *filename, size_t width, size_t height) {
+CvMat *read_data(char *filename, char delimiter, size_t width, size_t height) {
     CvMat *data = cvCreateMat(height, width, CV_32F);
 
     FILE *file = fopen(filename, "r");
@@ -89,12 +89,15 @@ CvMat *read_data(char *filename, size_t width, size_t height) {
             char *rest = line;
 
             for(size_t j = 0; j < width; ++j) {
-                cvmSet(data, i, j, strtof(rest, &rest));
-                rest++; // Skip the delimiter. // FIXME Actually do this properly.
+                cvmSet(data, i, j, strtof(rest, NULL));
+                rest = trim(split(rest, delimiter));
             }
         }
     }
 
+    free(line);
+
+    // FIXME Should this be done here, or prior to display?
     CvMat *normalized = normalize(data);
     cvReleaseData(data);
     return normalized;
@@ -123,7 +126,7 @@ Image *read_image(Config *config) {
 #endif
 
             CvMat *data = NULL;
-            if((data = read_data(filename, width, height)) != NULL) {
+            if((data = read_data(filename, config->csv_delimiter, width, height)) != NULL) {
                 image = cvGetImage(data, cvCreateImage(cvSize(width, height), IPL_DEPTH_32F, 1));
             }
         }
