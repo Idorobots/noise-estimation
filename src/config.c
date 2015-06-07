@@ -1,5 +1,7 @@
 #include "config.h"
 
+#define BUF_SIZE 256
+
 char *trim(char *str) {
     size_t len = 0;
     char *frontp = str;
@@ -37,7 +39,6 @@ char *trim(char *str) {
         }
         *endp = '\0';
     }
-
 
     return str;
 }
@@ -81,32 +82,30 @@ char *dup(char *string) {
     return strdup(string);
 }
 
-Config *build_config(Config *config, char *key, char *value) {
+void build_config(Config *config, char *key, char *value) {
     if(strcmp(key, "ex_filter_type") == 0) {
         config->ex_filter_type = atoi(value);
-    } else if (strcmp(key, "ex_window_size") == 0) {
+    } else if(strcmp(key, "ex_window_size") == 0) {
         config->ex_window_size = atoi(value);
-    } else if (strcmp(key, "ex_iterations") == 0) {
+    } else if(strcmp(key, "ex_iterations") == 0) {
         config->ex_iterations = atoi(value);
-    } else if (strcmp(key, "lpf_f") == 0) {
+    } else if(strcmp(key, "lpf_f") == 0) {
         config->lpf_f = strtod(value, NULL);
-    } else if (strcmp(key, "lpf_f_SNR") == 0) {
+    } else if(strcmp(key, "lpf_f_SNR") == 0) {
         config->lpf_f_SNR = strtod(value, NULL);
-    } else if (strcmp(key, "lpf_f_Rice") == 0) {
+    } else if(strcmp(key, "lpf_f_Rice") == 0) {
         config->lpf_f_Rice = strtod(value, NULL);
-    } else if (strcmp(key, "input_filename") == 0) {
+    } else if(strcmp(key, "input_filename") == 0) {
         config->input_filename = dup(trim(replace(value, '\'', ' ')));
-    } else if (strcmp(key, "output_filename_Gaussian") == 0) {
+    } else if(strcmp(key, "output_filename_Gaussian") == 0) {
         config->output_filename_Gaussian = dup(trim(replace(value, '\'', ' ')));
-    } else if (strcmp(key, "output_filename_Rician") == 0) {
+    } else if(strcmp(key, "output_filename_Rician") == 0) {
         config->output_filename_Rician = dup(trim(replace(value, '\'', ' ')));
     } else {
 #ifdef DEBUG
         printf("Unknown key: '%s', value: '%s'\n", key, value);
 #endif
     }
-
-    return config;
 }
 
 int read_config(Config *config, char *filename) {
@@ -114,17 +113,15 @@ int read_config(Config *config, char *filename) {
         return -1;
     }
 
-    FILE *file = NULL;
+    FILE *file = fopen(filename, "r");
 
-    file = fopen(filename, "r");
-
-    if (!file) {
+    if(!file) {
         return -1;
     }
 
     char *line = NULL;
     size_t num_bytes = 0;
-    ssize_t read;
+    ssize_t read = 0;
 
     while((read = getline(&line, &num_bytes, file)) != -1) {
         line = preprocess(line, num_bytes);
@@ -135,9 +132,9 @@ int read_config(Config *config, char *filename) {
             line = trim(line);
 
 #ifdef DEBUG
-            printf("key: %s, value: '%s'\n", line, value);
+            printf("key: %s, value: %s\n", line, value);
 #endif
-            config = build_config(config, line, value);
+            build_config(config, line, value);
         }
     }
 

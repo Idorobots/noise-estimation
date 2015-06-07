@@ -21,13 +21,13 @@ int main(int argc, char **argv) {
     }
     print_config(config);
 
-    IplImage *image = read_image(config->input_filename);
+    Image *image = read_image(config->input_filename);
     if(!image) {
         printf("Couldn't load input file %s.\n", config->input_filename);
         return EXIT_FAILURE;
     }
 
-    show_image("Noise Estimation", image);
+    show_image("Noise Estimation", 100, 100, image);
 
     // TODO Implement the actual algorithm.
 

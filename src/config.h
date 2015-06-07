@@ -8,7 +8,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#define BUF_SIZE 256
 
 typedef struct _Config {
     long ex_filter_type;

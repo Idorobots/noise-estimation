@@ -14,29 +14,30 @@ char *get_extension(char *filename) {
 
 size_t count(char *string, size_t length, char character) {
     size_t count = 0;
+
     for(size_t i = 0; i < length; ++i) {
         if(string[i] == character) {
             ++count;
         }
     }
+
     return count;
 }
 
 int get_size(char *filename, size_t *width, size_t *height) {
-    FILE *file = NULL;
+    FILE *file = fopen(filename, "r");
 
-    file = fopen(filename, "r");
-
-    if (!file) {
+    if(!file) {
         return -1;
     }
 
     char *line = NULL;
     size_t num_bytes = 0;
-    ssize_t read;
+    ssize_t read = 0;
 
     read = getline(&line, &num_bytes, file);
-    if (read == -1) {
+
+    if(read == -1) {
         return -1;
     }
 
@@ -56,6 +57,20 @@ int get_size(char *filename, size_t *width, size_t *height) {
     return 0;
 }
 
+CvMat *normalize(CvMat *data) {
+    double max = 0;
+    cvMinMaxLoc(data, NULL, &max, NULL, NULL, NULL);
+
+#ifdef DEBUG
+    printf("max: %f\n", max);
+#endif
+
+    CvMat *normalized = cvCloneMat(data);
+    cvScale(data, normalized, 1.0/max, 0);
+
+    return normalized;
+}
+
 CvMat *read_data(char *filename, size_t width, size_t height) {
     CvMat *data = cvCreateMat(height, width, CV_32F);
 
@@ -72,6 +87,7 @@ CvMat *read_data(char *filename, size_t width, size_t height) {
     for(size_t i = 0; i < height; ++i) {
         if((read = getline(&line, &num_bytes, file)) != -1) {
             char *rest = line;
+
             for(size_t j = 0; j < width; ++j) {
                 cvmSet(data, i, j, strtof(rest, &rest));
                 rest++; // Skip the delimiter. // FIXME Actually do this properly.
@@ -79,20 +95,12 @@ CvMat *read_data(char *filename, size_t width, size_t height) {
         }
     }
 
-    double max;
-    cvMinMaxLoc(data, NULL, &max, NULL, NULL, NULL);
-
-#ifdef DEBUG
-    printf("max: %f\n", max);
-#endif
-
-    CvMat *normalized = cvCloneMat(data);
-    cvScale(data, normalized, 1.0/max, 0);
-    // FIXME Dispose of data.
+    CvMat *normalized = normalize(data);
+    cvReleaseData(data);
     return normalized;
 }
 
-IplImage *read_image(char *filename) {
+Image *read_image(char *filename) {
     IplImage *image = NULL;
 
     char *extension = get_extension(filename);
@@ -102,9 +110,11 @@ IplImage *read_image(char *filename) {
 #endif
 
     if(strcmp(extension, "png") == 0) {
+        // Easy case:
         image = cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
-    } else if (strcmp(extension, "csv") == 0) {
-        size_t width, height;
+    } else if(strcmp(extension, "csv") == 0) {
+        // We need to parse the CSV manually:
+        size_t width = 0, height = 0;
 
         if(get_size(filename, &width, &height) != -1) {
 #ifdef DEBUG
@@ -123,8 +133,8 @@ IplImage *read_image(char *filename) {
     return image;
 }
 
-void show_image(char *title, IplImage *image) {
+void show_image(char *title, int x, int y, Image *image) {
     cvNamedWindow(title, CV_WINDOW_AUTOSIZE);
-    cvMoveWindow(title, 100, 100);
+    cvMoveWindow(title, x, y);
     cvShowImage(title, image);
 }

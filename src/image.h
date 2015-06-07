@@ -10,7 +10,10 @@
 #include <opencv2/highgui/highgui_c.h>
 #include <opencv2/imgproc/imgproc_c.h>
 
-IplImage *read_image(char *filename);
-void show_image(char *title, IplImage *image);
+
+typedef IplImage Image;
+
+Image *read_image(char *filename);
+void show_image(char *title, int x, int y, Image *image);
 
 #endif
