@@ -2,12 +2,12 @@ RM = rm -f
 CC = gcc
 #DEBUG = -DDEBUG
 CFLAGS = $(DEBUG) -Isrc -Wall -Wextra -pedantic -std=c99
-LDLIBS =
+LDLIBS = -lopencv_core -lopencv_highgui -lopencv_imgproc
 
 
 VPATH = src
 
-OBJS = main.o config.o
+OBJS = main.o config.o image.o utils.o
 
 TARGET = ne
 

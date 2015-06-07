@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 
-#define BUF_SIZE 256
+#include "utils.h"
+
 
 typedef struct _Config {
     long ex_filter_type;
@@ -19,6 +19,7 @@ typedef struct _Config {
     double lpf_f_SNR;
     double lpf_f_Rice;
 
+    char csv_delimiter;
     char *input_filename;
     char *output_filename_Gaussian;
     char *output_filename_Rician;

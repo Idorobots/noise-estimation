@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "config.h"
+#include "image.h"
 
 int main(int argc, char **argv) {
     char *conf_file = "config.conf";
@@ -20,9 +21,18 @@ int main(int argc, char **argv) {
     }
     print_config(config);
 
+    Image *image = read_image(config);
+    if(!image) {
+        printf("Couldn't load input file %s.\n", config->input_filename);
+        return EXIT_FAILURE;
+    }
+
+    show_image("Noise Estimation", 100, 100, image);
 
     // TODO Implement the actual algorithm.
 
-    free(config);
+    cvWaitKey(0);
+
+    // NOTE No need to cleanup images & windows since we're exitting anyway.
     return EXIT_SUCCESS;
 }
