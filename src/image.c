@@ -57,7 +57,7 @@ int get_size(char *filename, char delimiter, size_t *width, size_t *height) {
     return 0;
 }
 
-CvMat *normalize(CvMat *data) {
+Image *normalize(Image *data) {
     double max = 0;
     cvMinMaxLoc(data, NULL, &max, NULL, NULL, NULL);
 
@@ -65,14 +65,14 @@ CvMat *normalize(CvMat *data) {
     printf("max: %f\n", max);
 #endif
 
-    CvMat *normalized = cvCloneMat(data);
+    Image *normalized = cvCloneMat(data);
     cvScale(data, normalized, 1.0/max, 0);
 
     return normalized;
 }
 
-CvMat *read_data(char *filename, char delimiter, size_t width, size_t height) {
-    CvMat *data = cvCreateMat(height, width, CV_32F);
+Image *read_data(char *filename, char delimiter, size_t width, size_t height) {
+    Image *data = cvCreateMat(height, width, CV_32F);
 
     FILE *file = fopen(filename, "r");
 
@@ -96,16 +96,12 @@ CvMat *read_data(char *filename, char delimiter, size_t width, size_t height) {
     }
 
     free(line);
-
-    // FIXME Should this be done here, or prior to display?
-    CvMat *normalized = normalize(data);
-    cvReleaseData(data);
-    return normalized;
+    return data;
 }
 
 Image *read_image(Config *config) {
     char *filename = config->input_filename;
-    IplImage *image = NULL;
+    Image *image = NULL;
 
     char *extension = get_extension(filename);
 
@@ -115,7 +111,8 @@ Image *read_image(Config *config) {
 
     if(strcmp(extension, "png") == 0) {
         // Easy case:
-        image = cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
+        // FIXME Ensure this is the same format as the CSV loaded file.
+        image = cvLoadImageM(filename, CV_LOAD_IMAGE_COLOR);
     } else if(strcmp(extension, "csv") == 0) {
         // We need to parse the CSV manually:
         size_t width = 0, height = 0;
@@ -125,10 +122,7 @@ Image *read_image(Config *config) {
             printf("width: %ld\nheight: %ld\n", width, height);
 #endif
 
-            CvMat *data = NULL;
-            if((data = read_data(filename, config->csv_delimiter, width, height)) != NULL) {
-                image = cvGetImage(data, cvCreateImage(cvSize(width, height), IPL_DEPTH_32F, 1));
-            }
+            image = read_data(filename, config->csv_delimiter, width, height);
         }
     } else {
         printf("Unrecognized image file type: %s\n", extension);
@@ -138,7 +132,9 @@ Image *read_image(Config *config) {
 }
 
 void show_image(char *title, int x, int y, Image *image) {
+    Image *normalized = normalize(image);
     cvNamedWindow(title, CV_WINDOW_AUTOSIZE);
     cvMoveWindow(title, x, y);
-    cvShowImage(title, image);
+    cvShowImage(title, normalized);
+    cvReleaseMat(&normalized);
 }

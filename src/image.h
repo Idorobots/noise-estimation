@@ -14,7 +14,7 @@
 #include "utils.h"
 
 
-typedef IplImage Image;
+typedef CvMat Image;
 
 Image *read_image(Config *config);
 void show_image(char *title, int x, int y, Image *image);
