@@ -14,6 +14,8 @@
 #include "utils.h"
 
 
+#define IMAGE_DEPTH CV_32F
+
 typedef CvMat Image;
 
 Image *read_image(Config *config);

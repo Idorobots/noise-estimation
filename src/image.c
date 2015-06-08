@@ -72,7 +72,7 @@ Image *normalize(Image *data) {
 }
 
 Image *read_data(char *filename, char delimiter, size_t width, size_t height) {
-    Image *data = cvCreateMat(height, width, CV_32F);
+    Image *data = cvCreateMat(height, width, IMAGE_DEPTH);
 
     FILE *file = fopen(filename, "r");
 
@@ -111,8 +111,14 @@ Image *read_image(Config *config) {
 
     if(strcmp(extension, "png") == 0) {
         // Easy case:
-        // FIXME Ensure this is the same format as the CSV loaded file.
-        image = cvLoadImageM(filename, CV_LOAD_IMAGE_COLOR);
+        Image *data = cvLoadImageM(filename, CV_LOAD_IMAGE_GRAYSCALE);
+
+        if(data != NULL) {
+            int size[2];
+            cvGetDims(data, size);
+            image = cvCreateMat(size[0], size[1], IMAGE_DEPTH);
+            cvConvert(data, image);
+        }
     } else if(strcmp(extension, "csv") == 0) {
         // We need to parse the CSV manually:
         size_t width = 0, height = 0;
