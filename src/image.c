@@ -75,7 +75,17 @@ Image *normalize(const Image *data) {
     return normalized;
 }
 
-Image *read_csv_data(const char *filename, size_t width, size_t height, const Config *config) {
+Image *read_csv_data(const char *filename, const Config *config) {
+    size_t width = 0, height = 0;
+
+    if(get_csv_size(filename, &width, &height, config) == -1) {
+        return NULL;
+    }
+
+#ifdef DEBUG
+    printf("width: %ld\nheight: %ld\n", width, height);
+#endif
+
     Image *data = cvCreateMat(height, width, IMAGE_DEPTH);
 
     FILE *file = fopen(filename, "r");
@@ -152,15 +162,7 @@ Image *read_image(const char *filename, const Config *config) {
         }
     } else if(strcmp(extension, "csv") == 0) {
         // We need to parse the CSV manually:
-        size_t width = 0, height = 0;
-
-        if(get_csv_size(filename, &width, &height, config) != -1) {
-#ifdef DEBUG
-            printf("width: %ld\nheight: %ld\n", width, height);
-#endif
-
-            image = read_csv_data(filename, width, height, config);
-        }
+        image = read_csv_data(filename, config);
     } else {
         printf("Unrecognized image file type: %s\n", extension);
     }
