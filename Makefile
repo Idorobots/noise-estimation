@@ -7,7 +7,7 @@ LDLIBS = -lopencv_core -lopencv_highgui -lopencv_imgproc
 
 VPATH = src
 
-OBJS = main.o config.o image.o utils.o
+OBJS = main.o config.o image.o utils.o homomorf.o
 
 TARGET = ne
 
