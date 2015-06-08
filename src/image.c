@@ -9,6 +9,10 @@ const char *get_extension(const char *filename) {
         return "";
     }
 
+#ifdef DEBUG
+    printf("extension: '%s'\n", dot + 1);
+#endif
+
     return dot + 1;
 }
 
@@ -133,12 +137,7 @@ int write_csv_data(const char *filename, char delimiter, const Image *image) {
 
 Image *read_image(const char *filename, const Config *config) {
     Image *image = NULL;
-
     const char *extension = get_extension(filename);
-
-#ifdef DEBUG
-    printf("Extension: '%s'\n", extension);
-#endif
 
     if(strcmp(extension, "png") == 0) {
         // Easy case:
@@ -149,6 +148,7 @@ Image *read_image(const char *filename, const Config *config) {
             cvGetDims(data, size);
             image = cvCreateMat(size[0], size[1], IMAGE_DEPTH);
             cvConvert(data, image);
+            cvReleaseMat(&data);
         }
     } else if(strcmp(extension, "csv") == 0) {
         // We need to parse the CSV manually:
@@ -178,10 +178,6 @@ void show_image(const char *title, int x, int y, const Image *image) {
 
 int write_image(const char *filename, const Image *image, const Config *config) {
     const char *extension = get_extension(filename);
-
-#ifdef DEBUG
-    printf("Extension: '%s'\n", extension);
-#endif
 
     if(strcmp(extension, "png") == 0) {
         // Easy case:

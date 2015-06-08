@@ -24,10 +24,6 @@ char *replace(char *string, char from, char to) {
     return string;
 }
 
-char *dup(const char *string) {
-    return strdup(string);
-}
-
 void build_config(Config *config, const char *key, const char *value) {
     if(strcmp(key, "ex_filter_type") == 0) {
         config->ex_filter_type = atoi(value);
@@ -42,15 +38,15 @@ void build_config(Config *config, const char *key, const char *value) {
     } else if(strcmp(key, "lpf_f_Rice") == 0) {
         config->lpf_f_Rice = strtod(value, NULL);
     } else if(strcmp(key, "input_filename") == 0) {
-        config->input_filename = trim(replace(dup(value), '\'', ' '));
+        config->input_filename = trim(replace(strdup(value), '\'', ' '));
     } else if(strcmp(key, "output_filename_Gaussian") == 0) {
-        config->output_filename_Gaussian = trim(replace(dup(value), '\'', ' '));
+        config->output_filename_Gaussian = trim(replace(strdup(value), '\'', ' '));
     } else if(strcmp(key, "output_filename_Rician") == 0) {
-        config->output_filename_Rician = trim(replace(dup(value), '\'', ' '));
+        config->output_filename_Rician = trim(replace(strdup(value), '\'', ' '));
     } else if(strcmp(key, "csv_delimiter") == 0) {
-        char *duplicate = dup(value);
-        config->csv_delimiter = trim(replace(duplicate, '\'', ' '))[0];
-        free(duplicate);
+        char *dup = strdup(value);
+        config->csv_delimiter = trim(replace(dup, '\'', ' '))[0];
+        free(dup);
     } else {
 #ifdef DEBUG
         printf("Unknown key: '%s', value: '%s'\n", key, value);

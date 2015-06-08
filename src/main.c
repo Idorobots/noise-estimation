@@ -31,11 +31,13 @@ int run(const Config *config) {
     cvWaitKey(0);
 #endif
 
+    printf("Saving file %s.\n", config->output_filename_Rician);
     if(write_image(config->output_filename_Rician, rician, config) == -1) {
         printf("Couldn't save an image file %s.\n", config->output_filename_Rician);
         return EXIT_FAILURE;
     }
 
+    printf("Saving file %s.\n", config->output_filename_Gaussian);
     if(write_image(config->output_filename_Gaussian, gaussian, config) == -1) {
         printf("Couldn't save an image file %s.\n", config->output_filename_Gaussian);
         return EXIT_FAILURE;
@@ -55,15 +57,18 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    printf("Using config file %s:\n", conf_file);
+    printf("Using config file %s.\n", conf_file);
 
     Config config;
 
-    if(read_config(conf_file, &config) < 0) {
+    if(read_config(conf_file, &config) == -1) {
         printf("Couldn't load config file %s.\n", conf_file);
         return EXIT_FAILURE;
     }
+
+#ifdef DEBUG
     print_config(&config);
+#endif
 
     return run(&config);
 }
