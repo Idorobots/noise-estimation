@@ -7,7 +7,7 @@
 
 
 int run(Config *config) {
-    Image *input = read_image(config);
+    Image *input = read_image(config->input_filename, config);
 
     if(!input) {
         printf("Couldn't load input file %s.\n", config->input_filename);
@@ -31,7 +31,15 @@ int run(Config *config) {
     cvWaitKey(0);
 #endif
 
-    // TODO Save CSV files.
+    if(write_image(config->output_filename_Rician, rician, config) == -1) {
+        printf("Couldn't save an image file %s.\n", config->output_filename_Rician);
+        return EXIT_FAILURE;
+    }
+
+    if(write_image(config->output_filename_Gaussian, gaussian, config) == -1) {
+        printf("Couldn't save an image file %s.\n", config->output_filename_Gaussian);
+        return EXIT_FAILURE;
+    }
 
     // NOTE No need to cleanup images & windows since we're exitting anyway.
     return EXIT_SUCCESS;

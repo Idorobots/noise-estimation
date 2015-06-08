@@ -99,8 +99,7 @@ Image *read_data(char *filename, char delimiter, size_t width, size_t height) {
     return data;
 }
 
-Image *read_image(Config *config) {
-    char *filename = config->input_filename;
+Image *read_image(char *filename, Config *config) {
     Image *image = NULL;
 
     char *extension = get_extension(filename);
@@ -143,4 +142,24 @@ void show_image(char *title, int x, int y, Image *image) {
     cvMoveWindow(title, x, y);
     cvShowImage(title, normalized);
     cvReleaseMat(&normalized);
+}
+
+int write_image(char *filename, Image *image, Config *config) {
+    char *extension = get_extension(filename);
+
+#ifdef DEBUG
+    printf("Extension: '%s'\n", extension);
+#endif
+
+    if(strcmp(extension, "png") == 0) {
+        // Easy case:
+        return cvSaveImage(filename, image, NULL);
+    } else if (strcmp(extension, "csv") == 0) {
+        // TODO Save CSV
+        return 0;
+    } else {
+        printf("Unrecognized image file type: %s\n", extension);
+    }
+
+    return -1;
 }
