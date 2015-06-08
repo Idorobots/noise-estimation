@@ -24,7 +24,7 @@ size_t count(char *string, size_t length, char character) {
     return count;
 }
 
-int get_size(char *filename, char delimiter, size_t *width, size_t *height) {
+int get_csv_size(char *filename, char delimiter, size_t *width, size_t *height) {
     FILE *file = fopen(filename, "r");
 
     if(!file) {
@@ -71,7 +71,7 @@ Image *normalize(Image *data) {
     return normalized;
 }
 
-Image *read_data(char *filename, char delimiter, size_t width, size_t height) {
+Image *read_csv_data(char *filename, char delimiter, size_t width, size_t height) {
     Image *data = cvCreateMat(height, width, IMAGE_DEPTH);
 
     FILE *file = fopen(filename, "r");
@@ -96,7 +96,39 @@ Image *read_data(char *filename, char delimiter, size_t width, size_t height) {
     }
 
     free(line);
+    fclose(file);
     return data;
+}
+
+int write_csv_data(char *filename, char delimiter, Image *image) {
+    if(image == NULL) {
+        return -1;
+    }
+
+    int size[2];
+    cvGetDims(image, size);
+    size_t width = size[1];
+    size_t height = size[0];
+
+    FILE *file = fopen(filename, "w");
+
+    if(!file) {
+        return -1;
+    }
+
+    for(size_t i = 0; i < height; ++i) {
+        for(size_t j = 0; j < width; ++j) {
+            fprintf(file, "%f", cvmGet(image, i, j));
+
+            if(j < width-1) {
+                fprintf(file, "%c ", delimiter);
+            }
+        }
+        fprintf(file, "\n");
+    }
+
+    fclose(file);
+    return 0;
 }
 
 Image *read_image(char *filename, Config *config) {
@@ -122,12 +154,12 @@ Image *read_image(char *filename, Config *config) {
         // We need to parse the CSV manually:
         size_t width = 0, height = 0;
 
-        if(get_size(filename, config->csv_delimiter, &width, &height) != -1) {
+        if(get_csv_size(filename, config->csv_delimiter, &width, &height) != -1) {
 #ifdef DEBUG
             printf("width: %ld\nheight: %ld\n", width, height);
 #endif
 
-            image = read_data(filename, config->csv_delimiter, width, height);
+            image = read_csv_data(filename, config->csv_delimiter, width, height);
         }
     } else {
         printf("Unrecognized image file type: %s\n", extension);
@@ -155,8 +187,7 @@ int write_image(char *filename, Image *image, Config *config) {
         // Easy case:
         return cvSaveImage(filename, image, NULL);
     } else if (strcmp(extension, "csv") == 0) {
-        // TODO Save CSV
-        return 0;
+        return write_csv_data(filename, config->csv_delimiter, image);
     } else {
         printf("Unrecognized image file type: %s\n", extension);
     }
