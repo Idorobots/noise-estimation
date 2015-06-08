@@ -14,9 +14,12 @@
 #include "utils.h"
 
 
-typedef IplImage Image;
+#define IMAGE_DEPTH CV_32F
 
-Image *read_image(Config *config);
+typedef CvMat Image;
+
+Image *read_image(char *filename, Config *config);
 void show_image(char *title, int x, int y, Image *image);
+int write_image(char *filename, Image *image, Config *config);
 
 #endif

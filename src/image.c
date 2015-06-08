@@ -24,7 +24,7 @@ size_t count(char *string, size_t length, char character) {
     return count;
 }
 
-int get_size(char *filename, char delimiter, size_t *width, size_t *height) {
+int get_csv_size(char *filename, char delimiter, size_t *width, size_t *height) {
     FILE *file = fopen(filename, "r");
 
     if(!file) {
@@ -57,7 +57,7 @@ int get_size(char *filename, char delimiter, size_t *width, size_t *height) {
     return 0;
 }
 
-CvMat *normalize(CvMat *data) {
+Image *normalize(Image *data) {
     double max = 0;
     cvMinMaxLoc(data, NULL, &max, NULL, NULL, NULL);
 
@@ -65,14 +65,14 @@ CvMat *normalize(CvMat *data) {
     printf("max: %f\n", max);
 #endif
 
-    CvMat *normalized = cvCloneMat(data);
+    Image *normalized = cvCloneMat(data);
     cvScale(data, normalized, 1.0/max, 0);
 
     return normalized;
 }
 
-CvMat *read_data(char *filename, char delimiter, size_t width, size_t height) {
-    CvMat *data = cvCreateMat(height, width, CV_32F);
+Image *read_csv_data(char *filename, char delimiter, size_t width, size_t height) {
+    Image *data = cvCreateMat(height, width, IMAGE_DEPTH);
 
     FILE *file = fopen(filename, "r");
 
@@ -96,16 +96,43 @@ CvMat *read_data(char *filename, char delimiter, size_t width, size_t height) {
     }
 
     free(line);
-
-    // FIXME Should this be done here, or prior to display?
-    CvMat *normalized = normalize(data);
-    cvReleaseData(data);
-    return normalized;
+    fclose(file);
+    return data;
 }
 
-Image *read_image(Config *config) {
-    char *filename = config->input_filename;
-    IplImage *image = NULL;
+int write_csv_data(char *filename, char delimiter, Image *image) {
+    if(image == NULL) {
+        return -1;
+    }
+
+    int size[2];
+    cvGetDims(image, size);
+    size_t width = size[1];
+    size_t height = size[0];
+
+    FILE *file = fopen(filename, "w");
+
+    if(!file) {
+        return -1;
+    }
+
+    for(size_t i = 0; i < height; ++i) {
+        for(size_t j = 0; j < width; ++j) {
+            fprintf(file, "%f", cvmGet(image, i, j));
+
+            if(j < width-1) {
+                fprintf(file, "%c ", delimiter);
+            }
+        }
+        fprintf(file, "\n");
+    }
+
+    fclose(file);
+    return 0;
+}
+
+Image *read_image(char *filename, Config *config) {
+    Image *image = NULL;
 
     char *extension = get_extension(filename);
 
@@ -115,20 +142,24 @@ Image *read_image(Config *config) {
 
     if(strcmp(extension, "png") == 0) {
         // Easy case:
-        image = cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
+        Image *data = cvLoadImageM(filename, CV_LOAD_IMAGE_GRAYSCALE);
+
+        if(data != NULL) {
+            int size[2];
+            cvGetDims(data, size);
+            image = cvCreateMat(size[0], size[1], IMAGE_DEPTH);
+            cvConvert(data, image);
+        }
     } else if(strcmp(extension, "csv") == 0) {
         // We need to parse the CSV manually:
         size_t width = 0, height = 0;
 
-        if(get_size(filename, config->csv_delimiter, &width, &height) != -1) {
+        if(get_csv_size(filename, config->csv_delimiter, &width, &height) != -1) {
 #ifdef DEBUG
             printf("width: %ld\nheight: %ld\n", width, height);
 #endif
 
-            CvMat *data = NULL;
-            if((data = read_data(filename, config->csv_delimiter, width, height)) != NULL) {
-                image = cvGetImage(data, cvCreateImage(cvSize(width, height), IPL_DEPTH_32F, 1));
-            }
+            image = read_csv_data(filename, config->csv_delimiter, width, height);
         }
     } else {
         printf("Unrecognized image file type: %s\n", extension);
@@ -138,7 +169,28 @@ Image *read_image(Config *config) {
 }
 
 void show_image(char *title, int x, int y, Image *image) {
+    Image *normalized = normalize(image);
     cvNamedWindow(title, CV_WINDOW_AUTOSIZE);
     cvMoveWindow(title, x, y);
-    cvShowImage(title, image);
+    cvShowImage(title, normalized);
+    cvReleaseMat(&normalized);
+}
+
+int write_image(char *filename, Image *image, Config *config) {
+    char *extension = get_extension(filename);
+
+#ifdef DEBUG
+    printf("Extension: '%s'\n", extension);
+#endif
+
+    if(strcmp(extension, "png") == 0) {
+        // Easy case:
+        return cvSaveImage(filename, image, NULL);
+    } else if (strcmp(extension, "csv") == 0) {
+        return write_csv_data(filename, config->csv_delimiter, image);
+    } else {
+        printf("Unrecognized image file type: %s\n", extension);
+    }
+
+    return -1;
 }

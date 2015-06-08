@@ -3,6 +3,47 @@
 
 #include "config.h"
 #include "image.h"
+#include "homomorf.h"
+
+
+int run(Config *config) {
+    Image *input = read_image(config->input_filename, config);
+
+    if(!input) {
+        printf("Couldn't load input file %s.\n", config->input_filename);
+        return EXIT_FAILURE;
+    }
+
+#ifdef DEBUG
+    show_image("Input image", 100, 100, input);
+#endif
+
+    Image *rician = NULL, *gaussian = NULL;
+
+    if(homomorf_est(input, &rician, &gaussian, config) == -1) {
+        printf("Error while processing input file %s.\n", config->input_filename);
+        return EXIT_FAILURE;
+    }
+
+#ifdef DEBUG
+    show_image("Rician noise map", 400, 100, rician);
+    show_image("Gaussian noise map", 700, 100, gaussian);
+    cvWaitKey(0);
+#endif
+
+    if(write_image(config->output_filename_Rician, rician, config) == -1) {
+        printf("Couldn't save an image file %s.\n", config->output_filename_Rician);
+        return EXIT_FAILURE;
+    }
+
+    if(write_image(config->output_filename_Gaussian, gaussian, config) == -1) {
+        printf("Couldn't save an image file %s.\n", config->output_filename_Gaussian);
+        return EXIT_FAILURE;
+    }
+
+    // NOTE No need to cleanup images & windows since we're exitting anyway.
+    return EXIT_SUCCESS;
+}
 
 int main(int argc, char **argv) {
     char *conf_file = "config.conf";
@@ -21,18 +62,5 @@ int main(int argc, char **argv) {
     }
     print_config(config);
 
-    Image *image = read_image(config);
-    if(!image) {
-        printf("Couldn't load input file %s.\n", config->input_filename);
-        return EXIT_FAILURE;
-    }
-
-    show_image("Noise Estimation", 100, 100, image);
-
-    // TODO Implement the actual algorithm.
-
-    cvWaitKey(0);
-
-    // NOTE No need to cleanup images & windows since we're exitting anyway.
-    return EXIT_SUCCESS;
+    return run(config);
 }
