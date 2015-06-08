@@ -25,7 +25,7 @@ typedef struct _Config {
     char *output_filename_Rician;
 } Config;
 
-int read_config(Config *config, char *filename);
-void print_config(Config *config);
+int read_config(const char *filename, Config *config);
+void print_config(const Config *config);
 
 #endif

@@ -7,8 +7,7 @@ char *trim(char *str) {
 
     if(str == NULL) {
         return NULL;
-    }
-    if(str[0] == '\0') {
+    } else if(str[0] == '\0') {
         return str;
     }
 
@@ -18,6 +17,7 @@ char *trim(char *str) {
     while(isspace(*frontp)) {
         ++frontp;
     }
+
     if(endp != frontp) {
         while(isspace(*(--endp)) && endp != frontp) {}
     }
@@ -25,8 +25,7 @@ char *trim(char *str) {
     if(str + len - 1 != endp) {
         *(endp + 1) = '\0';
 
-    }
-    else if(frontp != str &&  endp == frontp) {
+    } else if(frontp != str && endp == frontp) {
         *str = '\0';
     }
 

@@ -6,7 +6,7 @@
 #include "homomorf.h"
 
 
-int run(Config *config) {
+int run(const Config *config) {
     Image *input = read_image(config->input_filename, config);
 
     if(!input) {
@@ -31,11 +31,13 @@ int run(Config *config) {
     cvWaitKey(0);
 #endif
 
+    printf("Saving file %s.\n", config->output_filename_Rician);
     if(write_image(config->output_filename_Rician, rician, config) == -1) {
         printf("Couldn't save an image file %s.\n", config->output_filename_Rician);
         return EXIT_FAILURE;
     }
 
+    printf("Saving file %s.\n", config->output_filename_Gaussian);
     if(write_image(config->output_filename_Gaussian, gaussian, config) == -1) {
         printf("Couldn't save an image file %s.\n", config->output_filename_Gaussian);
         return EXIT_FAILURE;
@@ -46,21 +48,27 @@ int run(Config *config) {
 }
 
 int main(int argc, char **argv) {
-    char *conf_file = "config.conf";
+    char *conf_file = NULL;
 
-    if(argc > 1) {
+    if(argc == 2) {
         conf_file = argv[1];
+    } else {
+        printf("USAGE: %s CONFIG_FILE\n", argv[0]);
+        return EXIT_FAILURE;
     }
 
-    printf("Using config file %s:\n", conf_file);
+    printf("Using config file %s.\n", conf_file);
 
-    Config *config = malloc(sizeof(Config));
+    Config config;
 
-    if(read_config(config, conf_file) < 0) {
+    if(read_config(conf_file, &config) == -1) {
         printf("Couldn't load config file %s.\n", conf_file);
         return EXIT_FAILURE;
     }
-    print_config(config);
 
-    return run(config);
+#ifdef DEBUG
+    print_config(&config);
+#endif
+
+    return run(&config);
 }

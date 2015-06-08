@@ -11,3 +11,9 @@ make clean && make
 ```
 make run
 ```
+
+Or...
+
+```
+make run CONFIG=path/to/config.conf
+```

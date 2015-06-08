@@ -24,11 +24,7 @@ char *replace(char *string, char from, char to) {
     return string;
 }
 
-char *dup(char *string) {
-    return strdup(string);
-}
-
-void build_config(Config *config, char *key, char *value) {
+void build_config(Config *config, const char *key, const char *value) {
     if(strcmp(key, "ex_filter_type") == 0) {
         config->ex_filter_type = atoi(value);
     } else if(strcmp(key, "ex_window_size") == 0) {
@@ -42,13 +38,15 @@ void build_config(Config *config, char *key, char *value) {
     } else if(strcmp(key, "lpf_f_Rice") == 0) {
         config->lpf_f_Rice = strtod(value, NULL);
     } else if(strcmp(key, "input_filename") == 0) {
-        config->input_filename = dup(trim(replace(value, '\'', ' ')));
+        config->input_filename = trim(replace(strdup(value), '\'', ' '));
     } else if(strcmp(key, "output_filename_Gaussian") == 0) {
-        config->output_filename_Gaussian = dup(trim(replace(value, '\'', ' ')));
+        config->output_filename_Gaussian = trim(replace(strdup(value), '\'', ' '));
     } else if(strcmp(key, "output_filename_Rician") == 0) {
-        config->output_filename_Rician = dup(trim(replace(value, '\'', ' ')));
+        config->output_filename_Rician = trim(replace(strdup(value), '\'', ' '));
     } else if(strcmp(key, "csv_delimiter") == 0) {
-        config->csv_delimiter = trim(replace(value, '\'', ' '))[0];
+        char *dup = strdup(value);
+        config->csv_delimiter = trim(replace(dup, '\'', ' '))[0];
+        free(dup);
     } else {
 #ifdef DEBUG
         printf("Unknown key: '%s', value: '%s'\n", key, value);
@@ -60,7 +58,7 @@ void add_defaults(Config *config) {
     config->csv_delimiter = ',';
 }
 
-int read_config(Config *config, char *filename) {
+int read_config(const char *filename, Config *config) {
     if(config == NULL) {
         return -1;
     }
@@ -98,7 +96,7 @@ int read_config(Config *config, char *filename) {
     return 0;
 }
 
-void print_config(Config *config) {
+void print_config(const Config *config) {
     printf("ex_filter_type = %ld\n", config->ex_filter_type);
     printf("ex_window_size = %ld\n", config->ex_window_size);
     printf("ex_iterations = %ld\n", config->ex_iterations);
