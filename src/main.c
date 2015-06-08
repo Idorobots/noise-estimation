@@ -46,10 +46,13 @@ int run(Config *config) {
 }
 
 int main(int argc, char **argv) {
-    char *conf_file = "config.conf";
+    char *conf_file = NULL;
 
-    if(argc > 1) {
+    if(argc == 2) {
         conf_file = argv[1];
+    } else {
+        printf("USAGE: %s CONFIG_FILE\n", argv[0]);
+        return EXIT_FAILURE;
     }
 
     printf("Using config file %s:\n", conf_file);

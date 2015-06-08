@@ -4,10 +4,11 @@ CC = gcc
 CFLAGS = $(DEBUG) -Isrc -Wall -Wextra -pedantic -std=c99
 LDLIBS = -lopencv_core -lopencv_highgui -lopencv_imgproc
 
-
 VPATH = src
 
 OBJS = main.o config.o image.o utils.o homomorf.o
+
+CONFIG = config.conf
 
 TARGET = ne
 
@@ -26,4 +27,4 @@ clean:
 	$(RM) $(OBJS)
 
 run:
-	@ ./$(TARGET)
+	@ ./$(TARGET) $(CONFIG)
