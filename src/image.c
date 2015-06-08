@@ -28,7 +28,7 @@ size_t count(const char *string, size_t length, char character) {
     return count;
 }
 
-int get_csv_size(const char *filename, char delimiter, size_t *width, size_t *height) {
+int get_csv_size(const char *filename, size_t *width, size_t *height, const Config *config) {
     FILE *file = fopen(filename, "r");
 
     if(!file) {
@@ -46,7 +46,7 @@ int get_csv_size(const char *filename, char delimiter, size_t *width, size_t *he
     }
 
     // Get image width.
-    *width = 1 + count(line, num_bytes, delimiter);
+    *width = 1 + count(line, num_bytes, config->csv_delimiter);
 
     // Get image height.
     for(size_t i = 1; ; i++) {
@@ -75,7 +75,7 @@ Image *normalize(const Image *data) {
     return normalized;
 }
 
-Image *read_csv_data(const char *filename, char delimiter, size_t width, size_t height) {
+Image *read_csv_data(const char *filename, size_t width, size_t height, const Config *config) {
     Image *data = cvCreateMat(height, width, IMAGE_DEPTH);
 
     FILE *file = fopen(filename, "r");
@@ -94,7 +94,7 @@ Image *read_csv_data(const char *filename, char delimiter, size_t width, size_t 
 
             for(size_t j = 0; j < width; ++j) {
                 cvmSet(data, i, j, strtof(rest, NULL));
-                rest = trim(split(rest, delimiter));
+                rest = trim(split(rest, config->csv_delimiter));
             }
         }
     }
@@ -104,7 +104,7 @@ Image *read_csv_data(const char *filename, char delimiter, size_t width, size_t 
     return data;
 }
 
-int write_csv_data(const char *filename, char delimiter, const Image *image) {
+int write_csv_data(const char *filename, const Image *image, const Config *config) {
     if(image == NULL) {
         return -1;
     }
@@ -125,7 +125,7 @@ int write_csv_data(const char *filename, char delimiter, const Image *image) {
             fprintf(file, "%f", cvmGet(image, i, j));
 
             if(j < width-1) {
-                fprintf(file, "%c ", delimiter);
+                fprintf(file, "%c ", config->csv_delimiter);
             }
         }
         fprintf(file, "\n");
@@ -154,12 +154,12 @@ Image *read_image(const char *filename, const Config *config) {
         // We need to parse the CSV manually:
         size_t width = 0, height = 0;
 
-        if(get_csv_size(filename, config->csv_delimiter, &width, &height) != -1) {
+        if(get_csv_size(filename, &width, &height, config) != -1) {
 #ifdef DEBUG
             printf("width: %ld\nheight: %ld\n", width, height);
 #endif
 
-            image = read_csv_data(filename, config->csv_delimiter, width, height);
+            image = read_csv_data(filename, width, height, config);
         }
     } else {
         printf("Unrecognized image file type: %s\n", extension);
@@ -183,7 +183,7 @@ int write_image(const char *filename, const Image *image, const Config *config) 
         // Easy case:
         return cvSaveImage(filename, image, NULL);
     } else if (strcmp(extension, "csv") == 0) {
-        return write_csv_data(filename, config->csv_delimiter, image);
+        return write_csv_data(filename, image, config);
     } else {
         printf("Unrecognized image file type: %s\n", extension);
     }
