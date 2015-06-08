@@ -6,7 +6,7 @@
 #include "homomorf.h"
 
 
-int run(Config *config) {
+int run(const Config *config) {
     Image *input = read_image(config->input_filename, config);
 
     if(!input) {
@@ -57,13 +57,13 @@ int main(int argc, char **argv) {
 
     printf("Using config file %s:\n", conf_file);
 
-    Config *config = malloc(sizeof(Config));
+    Config config;
 
-    if(read_config(config, conf_file) < 0) {
+    if(read_config(conf_file, &config) < 0) {
         printf("Couldn't load config file %s.\n", conf_file);
         return EXIT_FAILURE;
     }
-    print_config(config);
+    print_config(&config);
 
-    return run(config);
+    return run(&config);
 }

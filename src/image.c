@@ -2,7 +2,7 @@
 
 #define BUF_SIZE = (1024*64)
 
-char *get_extension(char *filename) {
+const char *get_extension(const char *filename) {
     char *dot = strrchr(filename, '.');
 
     if(!dot || dot == filename) {
@@ -12,7 +12,7 @@ char *get_extension(char *filename) {
     return dot + 1;
 }
 
-size_t count(char *string, size_t length, char character) {
+size_t count(const char *string, size_t length, char character) {
     size_t count = 0;
 
     for(size_t i = 0; i < length; ++i) {
@@ -24,7 +24,7 @@ size_t count(char *string, size_t length, char character) {
     return count;
 }
 
-int get_csv_size(char *filename, char delimiter, size_t *width, size_t *height) {
+int get_csv_size(const char *filename, char delimiter, size_t *width, size_t *height) {
     FILE *file = fopen(filename, "r");
 
     if(!file) {
@@ -57,7 +57,7 @@ int get_csv_size(char *filename, char delimiter, size_t *width, size_t *height) 
     return 0;
 }
 
-Image *normalize(Image *data) {
+Image *normalize(const Image *data) {
     double max = 0;
     cvMinMaxLoc(data, NULL, &max, NULL, NULL, NULL);
 
@@ -71,7 +71,7 @@ Image *normalize(Image *data) {
     return normalized;
 }
 
-Image *read_csv_data(char *filename, char delimiter, size_t width, size_t height) {
+Image *read_csv_data(const char *filename, char delimiter, size_t width, size_t height) {
     Image *data = cvCreateMat(height, width, IMAGE_DEPTH);
 
     FILE *file = fopen(filename, "r");
@@ -100,7 +100,7 @@ Image *read_csv_data(char *filename, char delimiter, size_t width, size_t height
     return data;
 }
 
-int write_csv_data(char *filename, char delimiter, Image *image) {
+int write_csv_data(const char *filename, char delimiter, const Image *image) {
     if(image == NULL) {
         return -1;
     }
@@ -131,10 +131,10 @@ int write_csv_data(char *filename, char delimiter, Image *image) {
     return 0;
 }
 
-Image *read_image(char *filename, Config *config) {
+Image *read_image(const char *filename, const Config *config) {
     Image *image = NULL;
 
-    char *extension = get_extension(filename);
+    const char *extension = get_extension(filename);
 
 #ifdef DEBUG
     printf("Extension: '%s'\n", extension);
@@ -168,7 +168,7 @@ Image *read_image(char *filename, Config *config) {
     return image;
 }
 
-void show_image(char *title, int x, int y, Image *image) {
+void show_image(const char *title, int x, int y, const Image *image) {
     Image *normalized = normalize(image);
     cvNamedWindow(title, CV_WINDOW_AUTOSIZE);
     cvMoveWindow(title, x, y);
@@ -176,8 +176,8 @@ void show_image(char *title, int x, int y, Image *image) {
     cvReleaseMat(&normalized);
 }
 
-int write_image(char *filename, Image *image, Config *config) {
-    char *extension = get_extension(filename);
+int write_image(const char *filename, const Image *image, const Config *config) {
+    const char *extension = get_extension(filename);
 
 #ifdef DEBUG
     printf("Extension: '%s'\n", extension);
