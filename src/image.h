@@ -20,6 +20,7 @@ typedef CvMat Image;
 
 Image *read_image(const char *filename, const Config *config);
 void show_image(const char *title, int x, int y, const Image *image);
+void print_image(const Image *image);
 int write_image(const char *filename, const Image *image, const Config *config);
 
 #endif

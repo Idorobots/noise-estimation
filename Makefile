@@ -2,7 +2,7 @@ RM = rm -f
 CC = gcc
 #DEBUG = -DDEBUG
 CFLAGS = $(DEBUG) -Isrc -Wall -Wextra -pedantic -std=c99
-LDLIBS = -lopencv_core -lopencv_highgui -lopencv_imgproc
+LDLIBS = -lm -lopencv_core -lopencv_highgui -lopencv_imgproc
 
 VPATH = src
 

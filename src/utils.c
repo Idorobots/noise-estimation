@@ -52,3 +52,17 @@ char *split(char *string, char delimiter) {
 
     return NULL;
 }
+
+CvMat *normalize(const CvMat *data) {
+    double max = 0;
+    cvMinMaxLoc(data, NULL, &max, NULL, NULL, NULL);
+
+#ifdef DEBUG
+    printf("max: %f\n", max);
+#endif
+
+    CvMat *normalized = cvCloneMat(data);
+    cvScale(data, normalized, 1.0/max, 0);
+
+    return normalized;
+}

@@ -61,20 +61,6 @@ int get_csv_size(const char *filename, size_t *width, size_t *height, const Conf
     return 0;
 }
 
-Image *normalize(const Image *data) {
-    double max = 0;
-    cvMinMaxLoc(data, NULL, &max, NULL, NULL, NULL);
-
-#ifdef DEBUG
-    printf("max: %f\n", max);
-#endif
-
-    Image *normalized = cvCloneMat(data);
-    cvScale(data, normalized, 1.0/max, 0);
-
-    return normalized;
-}
-
 Image *read_csv_data(const char *filename, const Config *config) {
     size_t width = 0, height = 0;
 
@@ -176,6 +162,18 @@ void show_image(const char *title, int x, int y, const Image *image) {
     cvMoveWindow(title, x, y);
     cvShowImage(title, normalized);
     cvReleaseMat(&normalized);
+}
+
+void print_image(const Image *image) {
+    size_t width = image->cols;
+    size_t height = image->rows;
+
+    for(size_t i = 0; i < height; ++i) {
+        for(size_t j = 0; j < width; ++j) {
+            printf("%.4lf ", cvmGet(image, i, j));
+        }
+        printf("\n");
+    }
 }
 
 int write_image(const char *filename, const Image *image, const Config *config) {
