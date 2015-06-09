@@ -61,20 +61,6 @@ int get_csv_size(const char *filename, size_t *width, size_t *height, const Conf
     return 0;
 }
 
-Image *normalize(const Image *data) {
-    double max = 0;
-    cvMinMaxLoc(data, NULL, &max, NULL, NULL, NULL);
-
-#ifdef DEBUG
-    printf("max: %f\n", max);
-#endif
-
-    Image *normalized = cvCloneMat(data);
-    cvScale(data, normalized, 1.0/max, 0);
-
-    return normalized;
-}
-
 Image *read_csv_data(const char *filename, const Config *config) {
     size_t width = 0, height = 0;
 
