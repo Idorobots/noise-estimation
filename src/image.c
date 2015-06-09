@@ -178,6 +178,18 @@ void show_image(const char *title, int x, int y, const Image *image) {
     cvReleaseMat(&normalized);
 }
 
+void print_image(const Image *image) {
+    size_t width = image->cols;
+    size_t height = image->rows;
+
+    for(size_t i = 0; i < height; ++i) {
+        for(size_t j = 0; j < width; ++j) {
+            printf("%.4lf ", cvmGet(image, i, j));
+        }
+        printf("\n");
+    }
+}
+
 int write_image(const char *filename, const Image *image, const Config *config) {
     const char *extension = get_extension(filename);
 
