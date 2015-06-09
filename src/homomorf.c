@@ -1,8 +1,32 @@
 #include "homomorf.h"
 
 void smooth_mean(const Image *input, Image *output, size_t size) {
-    // TODO Add border.
-    cvSmooth(input, output, CV_BLUR, size, size, 0, 0);
+    size_t width = input->cols + size;
+    size_t height = input->rows + size;
+    size_t border_size = floor(size / 2);
+
+    Image *border = cvCreateMat(width, height, IMAGE_DEPTH);
+    CvPoint offset = cvPoint(border_size, border_size);
+    cvCopyMakeBorder(input, border, offset, IPL_BORDER_REPLICATE, cvScalarAll(0));
+
+#ifdef DEBUG
+    show_image("With border", 100, 300, border);
+#endif
+
+    Image *smooth = cvCloneMat(border);
+    cvSmooth(border, smooth, CV_BLUR, size, size, 0, 0);
+
+    Image *no_border = cvCloneMat(input);
+    cvGetSubRect(smooth, no_border, cvRect(border_size, border_size, input->cols, input->rows));
+
+#ifdef DEBUG
+    show_image("Without border", 300, 300, no_border);
+#endif
+
+    cvCopy(no_border, output, NULL);
+    cvReleaseMat(&no_border);
+    cvReleaseMat(&border);
+    cvReleaseMat(&smooth);
 }
 
 void lpf(const Image *input, Image *output, const Config *config) {
