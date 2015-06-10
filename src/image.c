@@ -161,19 +161,19 @@ double interpolate(double val, double y0, double x0, double y1, double x1) {
 }
 
 double jet_base(double val) {
-    if(val <= -0.75) return 0.0;
-    else if(val <= -0.25) return interpolate( val, 0.0, -0.75, 1.0, -0.25 );
-    else if(val <= 0.25) return 1.0;
-    else if(val <= 0.75) return interpolate( val, 1.0, 0.25, 0.0, 0.75 );
+    if(val <= 0.125) return 0.0;
+    else if(val <= 0.375) return interpolate(val, 0.0, 0.125, 1.0, 0.375);
+    else if(val <= 0.625) return 1.0;
+    else if(val <= 0.875) return interpolate(val, 1.0, 0.625, 0.0, 0.875);
     else return 0.0;
 }
 
 CvScalar jet(double gray) {
     // NOTE OpenCV stores pixels as BGR not RGB.
     CvScalar ret = {
-        jet_base(gray + 0.5),
+        jet_base(gray + 0.25),
         jet_base(gray),
-        jet_base(gray - 0.5)
+        jet_base(gray - 0.25)
     };
 
     return ret;
@@ -192,7 +192,7 @@ IplImage *apply_color_map(const Image *image, int colormap) {
 
         for(size_t i = 0; i < height; ++i) {
             for(size_t j = 0; j < height; ++j) {
-                cvSet2D(output, i, j, jet(cvmGet(image, i, j) * 2 - 1)); // Scale to (-1, 1)
+                cvSet2D(output, i, j, jet(cvmGet(image, i, j)));
             }
         }
 
