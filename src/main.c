@@ -20,6 +20,7 @@ int run(const Config *config, const Options *options) {
     }
 
     if(!options->no_gui) {
+        printf("GUI mode, press any key to exit.\n");
         show_image("Input image", 100, 100, input);
     }
 
