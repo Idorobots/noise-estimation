@@ -16,6 +16,9 @@
 
 #define IMAGE_DEPTH CV_32F
 
+#define COLORMAP_GRAYSCALE 0
+#define COLORMAP_JET 1
+
 typedef CvMat Image;
 
 Image *read_image(const char *filename, const Config *config);
