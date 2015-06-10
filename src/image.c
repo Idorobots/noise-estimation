@@ -156,11 +156,62 @@ Image *read_image(const char *filename, const Config *config) {
     return image;
 }
 
+double interpolate(double val, double y0, double x0, double y1, double x1) {
+    return (val-x0)*(y1-y0)/(x1-x0) + y0;
+}
+
+double jet_base(double val) {
+    if(val <= 0.125) return 0.0;
+    else if(val <= 0.375) return interpolate(val, 0.0, 0.125, 1.0, 0.375);
+    else if(val <= 0.625) return 1.0;
+    else if(val <= 0.875) return interpolate(val, 1.0, 0.625, 0.0, 0.875);
+    else return 0.0;
+}
+
+CvScalar jet(double gray) {
+    // NOTE OpenCV stores pixels as BGR not RGB.
+    CvScalar ret = {
+        jet_base(gray + 0.25),
+        jet_base(gray),
+        jet_base(gray - 0.25)
+    };
+
+    return ret;
+}
+
+IplImage *apply_color_map(const Image *image, int colormap) {
+    if(colormap == COLORMAP_GRAYSCALE) {
+        IplImage *output = cvCreateImage(cvGetSize(image), IPL_DEPTH_32F, 1);
+        cvGetImage(image, output);
+        return cvCloneImage(output);
+    } else if(colormap == COLORMAP_JET) {
+        IplImage *output = cvCreateImage(cvGetSize(image), IPL_DEPTH_32F, 3);
+
+        size_t width = image->cols;
+        size_t height = image->rows;
+
+        for(size_t i = 0; i < height; ++i) {
+            for(size_t j = 0; j < height; ++j) {
+                cvSet2D(output, i, j, jet(cvmGet(image, i, j)));
+            }
+        }
+
+        return output;
+    } else {
+        printf("Unrecognized colormap parameter: %d\n", colormap);
+        return NULL;
+    }
+}
+
 void show_image(const char *title, int x, int y, const Image *image) {
     Image *normalized = normalize(image);
+    IplImage *processed = apply_color_map(normalized, COLORMAP_JET);
+
     cvNamedWindow(title, CV_WINDOW_AUTOSIZE);
     cvMoveWindow(title, x, y);
-    cvShowImage(title, normalized);
+    cvShowImage(title, processed);
+
+    cvReleaseImage(&processed);
     cvReleaseMat(&normalized);
 }
 
