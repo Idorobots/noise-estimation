@@ -56,7 +56,8 @@ int run(const Config *config, const Options *options) {
 void print_usage(const char *name) {
     printf("USAGE: %s [OPTIONS] CONFIG_FILE\n", name);
     printf("OPTIONS:\n");
-    printf("\t--no-gui\tDisables GUI images\n");
+    printf("\t%-15s%-30s\n", "--help", "Display this message.");
+    printf("\t%-15s%-30s\n", "--no-gui", "Disable GUI images.");
 }
 
 int main(int argc, char **argv) {
@@ -76,6 +77,9 @@ int main(int argc, char **argv) {
             if(argv[i][0] == '-') {
                 if(strcmp(argv[i], "--no-gui") == 0) {
                     options.no_gui = 1;
+                } else if(strcmp(argv[i], "--help") == 0) {
+                    print_usage(argv[0]);
+                    return EXIT_SUCCESS;
                 } else {
                     printf("ERROR: Unrecognized option: %s\n", argv[i]);
                     print_usage(argv[0]);
