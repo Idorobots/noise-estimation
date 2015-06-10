@@ -24,6 +24,10 @@ char *replace(char *string, char from, char to) {
     return string;
 }
 
+char *parse_string(const char *string) {
+    return trim(replace(strdup(string), '\'', ' '));
+}
+
 void build_config(Config *config, const char *key, const char *value) {
     if(strcmp(key, "ex_filter_type") == 0) {
         config->ex_filter_type = atoi(value);
@@ -38,15 +42,21 @@ void build_config(Config *config, const char *key, const char *value) {
     } else if(strcmp(key, "lpf_f_Rice") == 0) {
         config->lpf_f_Rice = strtod(value, NULL);
     } else if(strcmp(key, "input_filename") == 0) {
-        config->input_filename = trim(replace(strdup(value), '\'', ' '));
+        config->input_filename = parse_string(value);
     } else if(strcmp(key, "output_filename_Gaussian") == 0) {
-        config->output_filename_Gaussian = trim(replace(strdup(value), '\'', ' '));
+        config->output_filename_Gaussian = parse_string(value);
     } else if(strcmp(key, "output_filename_Rician") == 0) {
-        config->output_filename_Rician = trim(replace(strdup(value), '\'', ' '));
+        config->output_filename_Rician = parse_string(value);
     } else if(strcmp(key, "csv_delimiter") == 0) {
-        char *dup = strdup(value);
-        config->csv_delimiter = trim(replace(dup, '\'', ' '))[0];
-        free(dup);
+        char *parsed = parse_string(value);
+        config->csv_delimiter = parsed[0];
+        free(parsed);
+    } else if(strcmp(key, "title_input") == 0) {
+        config->title_input = parse_string(value);
+    } else if(strcmp(key, "title_Gaussian") == 0) {
+        config->title_Gaussian = parse_string(value);
+    } else if(strcmp(key, "title_Rician") == 0) {
+        config->title_Rician = parse_string(value);
     } else {
 #ifdef DEBUG
         printf("Unknown key: '%s', value: '%s'\n", key, value);
@@ -56,6 +66,9 @@ void build_config(Config *config, const char *key, const char *value) {
 
 void add_defaults(Config *config) {
     config->csv_delimiter = ',';
+    config->title_input = "Noisy image";
+    config->title_Gaussian = "Gaussian noise map estimation";
+    config->title_Rician = "Rician noise map estimation";
 }
 
 int read_config(const char *filename, Config *config) {
