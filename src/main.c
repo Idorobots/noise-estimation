@@ -21,7 +21,7 @@ int run(const Config *config, const Options *options) {
 
     if(!options->no_gui) {
         printf("GUI mode, press any key to exit.\n");
-        show_image("Input image", 100, 100, input);
+        show_image(config->title_input, 100, 100, input);
     }
 
     Image *rician = NULL, *gaussian = NULL;
@@ -32,8 +32,8 @@ int run(const Config *config, const Options *options) {
     }
 
     if(!options->no_gui) {
-        show_image("Rician noise map", 400, 100, rician);
-        show_image("Gaussian noise map", 700, 100, gaussian);
+        show_image(config->title_Rician, 400, 100, rician);
+        show_image(config->title_Gaussian, 700, 100, gaussian);
         cvWaitKey(0);
     }
 

@@ -23,6 +23,10 @@ typedef struct _Config {
     char *input_filename;
     char *output_filename_Gaussian;
     char *output_filename_Rician;
+
+    char *title_input;
+    char *title_Gaussian;
+    char *title_Rician;
 } Config;
 
 int read_config(const char *filename, Config *config);
