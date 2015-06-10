@@ -125,12 +125,12 @@ int homomorf_rice(const Image *input, Image **output, const Config *config) {
 
 int homomorf_est(const Image *input, Image **rician_map, Image **gaussian_map, const Config *config) {
     if(homomorf_gauss(input, gaussian_map, config) == -1) {
-        printf("Couldn't compute the Gaussian map.\n");
+        printf("ERROR: Couldn't compute the Gaussian map.\n");
         return -1;
     }
 
     if(homomorf_rice(input, rician_map, config) == -1) {
-        printf("Couldn't compute the Rician map.\n");
+        printf("ERROR: Couldn't compute the Rician map.\n");
         return -1;
     }
 

@@ -15,7 +15,7 @@ int run(const Config *config, const Options *options) {
     Image *input = read_image(config->input_filename, config);
 
     if(!input) {
-        printf("Couldn't load input file %s.\n", config->input_filename);
+        printf("ERROR: Couldn't load input file %s.\n", config->input_filename);
         return EXIT_FAILURE;
     }
 
@@ -26,7 +26,7 @@ int run(const Config *config, const Options *options) {
     Image *rician = NULL, *gaussian = NULL;
 
     if(homomorf_est(input, &rician, &gaussian, config) == -1) {
-        printf("Error while processing input file %s.\n", config->input_filename);
+        printf("ERROR: Error while processing input file %s.\n", config->input_filename);
         return EXIT_FAILURE;
     }
 
@@ -38,13 +38,13 @@ int run(const Config *config, const Options *options) {
 
     printf("Saving file %s.\n", config->output_filename_Rician);
     if(write_image(config->output_filename_Rician, rician, config) == -1) {
-        printf("Couldn't save an image file %s.\n", config->output_filename_Rician);
+        printf("ERROR: Couldn't save an image file %s.\n", config->output_filename_Rician);
         return EXIT_FAILURE;
     }
 
     printf("Saving file %s.\n", config->output_filename_Gaussian);
     if(write_image(config->output_filename_Gaussian, gaussian, config) == -1) {
-        printf("Couldn't save an image file %s.\n", config->output_filename_Gaussian);
+        printf("ERROR: Couldn't save an image file %s.\n", config->output_filename_Gaussian);
         return EXIT_FAILURE;
     }
 
@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
             } else if(i == (size_t) argc-1) {
                 options.conf_file = argv[i];
             } else {
-                printf("ERROR: Too many input arguments: %s\n", argv[i]);
+                printf("ERROR: Too many input arguments, starting at: %s\n", argv[i+1]);
                 print_usage(argv[0]);
                 return EXIT_FAILURE;
             }

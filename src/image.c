@@ -150,7 +150,7 @@ Image *read_image(const char *filename, const Config *config) {
         // We need to parse the CSV manually:
         image = read_csv_data(filename, config);
     } else {
-        printf("Unrecognized image file type: %s\n", extension);
+        printf("ERROR: Unrecognized image file type: %s\n", extension);
     }
 
     return image;
@@ -198,7 +198,7 @@ IplImage *apply_color_map(const Image *image, int colormap) {
 
         return output;
     } else {
-        printf("Unrecognized colormap parameter: %d\n", colormap);
+        printf("ERROR: Unrecognized colormap parameter: %d\n", colormap);
         return NULL;
     }
 }
@@ -236,7 +236,7 @@ int write_image(const char *filename, const Image *image, const Config *config) 
     } else if (strcmp(extension, "csv") == 0) {
         return write_csv_data(filename, image, config);
     } else {
-        printf("Unrecognized image file type: %s\n", extension);
+        printf("ERROR: Unrecognized image file type: %s\n", extension);
     }
 
     return -1;
