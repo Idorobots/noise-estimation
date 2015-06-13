@@ -117,19 +117,81 @@ int homomorf_gauss(const Image *input, Image **output, const Config *config) {
     return 0;
 }
 
-int homomorf_rice(const Image *input, Image **output, const Config *config) {
-    // TODO Actually implement the algorithm.
+void em_mean(const Image *input, Image *mean, Image *sigma, size_t size, size_t iterations) {
+    // TODO Actually implement this.
+    smooth_mean(input, mean, size);
+}
+
+Image *estimated_SNR(const Image *mean, const Image *sigma, const Config *config) {
+    // TODO Actually implement this.
+    return cvCloneMat(mean);
+}
+
+void correct_rice(const Image *image, const Image *SNR, Image *correct) {
+    // TODO Actually implement this.
+    cvCopy(image, correct, NULL);
+}
+
+int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Config *config) {
+    Image *snr = NULL;
+
+    if(SNR != NULL) {
+        snr = cvCloneMat(SNR);
+    }
+
+    Image *mean = cvCloneMat(input);
+
+    if(config->ex_filter_type == 1) {
+        // Local mean.
+        smooth_mean(input, mean, config->ex_window_size);
+    } else {
+        // Expectation maximization.
+        Image *sigma = cvCloneMat(input);
+        em_mean(input, mean, sigma, config->ex_window_size, config->ex_iterations);
+
+        if(SNR == NULL) {
+            snr = estimated_SNR(mean, sigma, config);
+        }
+
+        cvReleaseMat(&sigma);
+    }
+
+    Image *diff = cvCloneMat(input);
+    cvAbsDiff(input, mean, diff);
+
+    // NOTE No need to remove zeros, since cvLog handles them properly.
+    Image *diff_log = cvCloneMat(input);
+    cvLog(diff, diff_log);
+
+    Image *filter = cvCloneMat(input);
+    lpf(diff_log, filter, config->lpf_f);
+
+    Image *correct = cvCloneMat(input);
+    correct_rice(filter, snr, correct);
+
+    Image *diff_exp = cvCloneMat(input);
+    cvExp(correct, diff_exp);
+
     *output = cvCloneMat(input);
+    cvScale(diff_exp, *output, 2 / sqrt(2) * exp(EULER_GAMMA/2), 0);
+
+    cvReleaseMat(&diff_exp);
+    cvReleaseMat(&correct);
+    cvReleaseMat(&snr);
+    cvReleaseMat(&filter);
+    cvReleaseMat(&diff_log);
+    cvReleaseMat(&diff);
+    cvReleaseMat(&mean);
     return 0;
 }
 
-int homomorf_est(const Image *input, Image **rician_map, Image **gaussian_map, const Config *config) {
+int homomorf_est(const Image *input, const Image *SNR, Image **rician_map, Image **gaussian_map, const Config *config) {
     if(homomorf_gauss(input, gaussian_map, config) == -1) {
         printf("ERROR: Couldn't compute the Gaussian map.\n");
         return -1;
     }
 
-    if(homomorf_rice(input, rician_map, config) == -1) {
+    if(homomorf_rice(input, SNR, rician_map, config) == -1) {
         printf("ERROR: Couldn't compute the Rician map.\n");
         return -1;
     }

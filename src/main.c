@@ -40,7 +40,7 @@ int run(const Config *config, const Options *options) {
 
     Image *rician = NULL, *gaussian = NULL;
 
-    if(homomorf_est(input, &rician, &gaussian, config) == -1) {
+    if(homomorf_est(input, SNR, &rician, &gaussian, config) == -1) {
         printf("ERROR: Error while processing input file %s.\n", config->input_filename);
         return EXIT_FAILURE;
     }
