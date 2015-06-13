@@ -133,6 +133,11 @@ int write_csv_data(const char *filename, const Image *image, const Config *confi
 
 Image *read_image(const char *filename, const Config *config) {
     Image *image = NULL;
+
+    if(filename == NULL) {
+        return image;
+    }
+
     const char *extension = get_extension(filename);
 
     if(strcmp(extension, "png") == 0) {
