@@ -117,9 +117,105 @@ int homomorf_gauss(const Image *input, Image **output, const Config *config) {
     return 0;
 }
 
-void em_mean(const Image *input, Image *mean, Image *sigma, size_t size, size_t iterations) {
-    // TODO Actually implement this.
-    smooth_mean(input, mean, size);
+void clamp_lower(const Image *input, Image *output, double value) {
+    CvSize size = cvGetSize(input);
+    Image *mask = cvCreateMat(size.width, size.height, CV_8U);
+
+    cvCopy(input, output, NULL);
+    cvCmpS(input, value, mask, CV_CMP_LT);
+    cvSet(output, cvScalar(value, 0, 0, 0), mask);
+
+    cvReleaseMat(&mask);
+}
+
+void besseli_approx(const Image *input, const Image *mean, const Image *sigma, Image *output) {
+
+    Image *mul = cvCloneMat(input);
+    cvMul(mean, input, mul, 1.0);
+
+    Image *div = cvCloneMat(input);
+    cvDiv(mul, sigma, div, 1.0);
+
+    Image *besseli = cvCloneMat(input);
+    // TODO Implement besseli approximation
+
+    cvMul(besseli, input, output, 1.0);
+
+    cvReleaseMat(&besseli);
+    cvReleaseMat(&mul);
+    cvReleaseMat(&div);
+}
+
+void em_mean(const Image *image, Image *mean, Image *sigma, size_t size, size_t iterations) {
+    Image *square = cvCloneMat(image);
+    cvMul(image, image, square, 1.0);
+
+    Image *square_f = cvCloneMat(image);
+    smooth_mean(square, square_f, size);
+
+    Image *dssf = cvCloneMat(image);
+    cvMul(square_f, square_f, dssf, 2.0);
+
+    Image *quad = cvCloneMat(image);
+    cvMul(square, square, quad, 1.0);
+
+    Image *quad_f = cvCloneMat(image);
+    smooth_mean(quad, quad_f, size);
+
+    Image *diff = cvCloneMat(image);
+    cvSub(dssf, quad_f, diff, NULL);
+
+    Image *max = cvCloneMat(image);
+    clamp_lower(diff, max, 0.0);
+
+    Image *root = cvCloneMat(image);
+    cvPow(max, root, 0.5);
+
+    Image *mean_k = cvCloneMat(image);
+    cvPow(root, mean_k, 0.5);
+
+    Image *sigma_k = cvCloneMat(image);
+    cvSub(square_f, root, diff, NULL);
+    clamp_lower(diff, max, 0.01);
+    cvScale(max, sigma_k, 0.5, 0);
+
+    cvReleaseMat(&quad_f);
+    cvReleaseMat(&quad);
+    cvReleaseMat(&dssf);
+
+    // NOTE Temporary variables for the loop.
+    Image *approx = cvCloneMat(image);
+    Image *smooth = cvCloneMat(image);
+    Image *mean_square = cvCloneMat(image);
+    Image *half = cvCloneMat(image);
+
+    while(iterations --> 0) {
+        // Mean
+        besseli_approx(image, mean_k, sigma_k, approx);
+        smooth_mean(approx, smooth, size);
+        clamp_lower(smooth, mean_k, 0.0);
+
+        // Sigma
+        cvMul(mean_k, mean_k, mean_square, 1.0);
+        cvSub(square_f, mean_square, diff, NULL);
+        cvScale(diff, half, 0.5, 0);
+        clamp_lower(half, sigma_k, 0.01);
+
+    }
+    cvReleaseMat(&smooth);
+    cvReleaseMat(&approx);
+    cvReleaseMat(&half);
+    cvReleaseMat(&mean_square);
+
+    cvPow(sigma_k, sigma, 0.5);
+    cvCopy(mean_k, mean, NULL);
+
+    cvReleaseMat(&sigma_k);
+    cvReleaseMat(&mean_k);
+    cvReleaseMat(&max);
+    cvReleaseMat(&diff);
+    cvReleaseMat(&square_f);
+    cvReleaseMat(&square);
 }
 
 Image *estimated_SNR(const Image *mean, const Image *sigma, const Config *config) {
