@@ -123,8 +123,18 @@ void em_mean(const Image *input, Image *mean, Image *sigma, size_t size, size_t 
 }
 
 Image *estimated_SNR(const Image *mean, const Image *sigma, const Config *config) {
-    // TODO Actually implement this.
-    return cvCloneMat(mean);
+    Image *sigma_f = cvCloneMat(mean);
+    lpf(sigma, sigma_f, config->lpf_f_SNR);
+
+    Image *SNR = cvCloneMat(mean);
+    cvDiv(mean, sigma_f, SNR, 1.0);
+
+#ifdef DEBUG
+    show_image("SNR", 300, 500, SNR);
+#endif
+
+    cvReleaseMat(&sigma_f);
+    return SNR;
 }
 
 void correct_rice(const Image *image, const Image *SNR, Image *correct) {
@@ -141,19 +151,22 @@ int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Co
 
     Image *mean = cvCloneMat(input);
 
-    if(config->ex_filter_type == 1) {
-        // Local mean.
-        smooth_mean(input, mean, config->ex_window_size);
-    } else {
+    // NOTE We need to compute EM anyway if SNR is not supplied.
+    if(SNR == NULL || config->ex_filter_type == 2) {
         // Expectation maximization.
         Image *sigma = cvCloneMat(input);
         em_mean(input, mean, sigma, config->ex_window_size, config->ex_iterations);
 
-        if(SNR == NULL) {
-            snr = estimated_SNR(mean, sigma, config);
-        }
-
+        snr = estimated_SNR(mean, sigma, config);
         cvReleaseMat(&sigma);
+    }
+
+    if(config->ex_filter_type == 1) {
+        // Local mean.
+        smooth_mean(input, mean, config->ex_window_size);
+    } else {
+        printf("ERROR: Unknown filter type: %ld.\n", config->ex_filter_type);
+        return -1;
     }
 
     Image *diff = cvCloneMat(input);
