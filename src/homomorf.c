@@ -138,8 +138,44 @@ Image *estimated_SNR(const Image *mean, const Image *sigma, const Config *config
 }
 
 void correct_rice(const Image *image, const Image *SNR, Image *correct) {
-    // TODO Actually implement this.
-    cvCopy(image, correct, NULL);
+    double coefs[] = {
+        -0.289549906258443,   -0.0388922575606330,   0.409867108141953,
+        -0.355237628488567,    0.149328280945610,   -0.0357861117942093,
+        0.00497952893859122, -0.000374756374477592, 0.0000118020229140092
+    };
+
+    Image *fc = cvCloneMat(image);
+    cvSet(fc, cvScalar(coefs[0], 0, 0, 0), NULL);
+
+    Image *pow = cvCloneMat(image);
+    for(size_t i = 1; i < sizeof(coefs) / sizeof(coefs[0]); ++i) {
+        cvPow(SNR, pow, (double) i);
+
+        Image *scale = cvCloneMat(image);
+        cvScale(pow, scale, coefs[i], 0);
+
+        Image *fc_copy = cvCloneMat(fc);
+        cvAdd(fc_copy, scale, fc, NULL);
+
+        cvReleaseMat(&scale);
+        cvReleaseMat(&fc_copy);
+    }
+
+    CvSize size = cvGetSize(image);
+    Image *mask = cvCreateMat(size.width, size.height, CV_8U);
+    cvCmpS(SNR, RICE_CORRECTION_THRESHOLD, mask, CV_CMP_GT);
+    cvSet(fc, cvScalar(0, 0, 0, 0), mask);
+
+    cvSub(image, fc, correct, NULL);
+
+#ifdef DEBUG
+    printf("sum(fc): %lf\n", cvSum(fc).val[0]);
+    show_image("Corrected", 700, 500, correct);
+#endif
+
+    cvReleaseMat(&pow);
+    cvReleaseMat(&mask);
+    cvReleaseMat(&fc);
 }
 
 int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Config *config) {
@@ -182,8 +218,11 @@ int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Co
     Image *correct = cvCloneMat(input);
     correct_rice(filter, snr, correct);
 
+    Image *filter2 = cvCloneMat(input);
+    lpf(correct, filter2, config->lpf_f_Rice);
+
     Image *diff_exp = cvCloneMat(input);
-    cvExp(correct, diff_exp);
+    cvExp(filter2, diff_exp);
 
     *output = cvCloneMat(input);
     cvScale(diff_exp, *output, 2 / sqrt(2) * exp(EULER_GAMMA/2), 0);
