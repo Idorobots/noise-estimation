@@ -43,6 +43,8 @@ void build_config(Config *config, const char *key, const char *value) {
         config->lpf_f_Rice = strtod(value, NULL);
     } else if(strcmp(key, "input_filename") == 0) {
         config->input_filename = parse_string(value);
+    } else if(strcmp(key, "input_filename_SNR") == 0) {
+        config->input_filename_SNR = parse_string(value);
     } else if(strcmp(key, "output_filename_Gaussian") == 0) {
         config->output_filename_Gaussian = parse_string(value);
     } else if(strcmp(key, "output_filename_Rician") == 0) {
@@ -53,6 +55,8 @@ void build_config(Config *config, const char *key, const char *value) {
         free(parsed);
     } else if(strcmp(key, "title_input") == 0) {
         config->title_input = parse_string(value);
+    } else if(strcmp(key, "title_SNR") == 0) {
+        config->title_SNR = parse_string(value);
     } else if(strcmp(key, "title_Gaussian") == 0) {
         config->title_Gaussian = parse_string(value);
     } else if(strcmp(key, "title_Rician") == 0) {
@@ -66,7 +70,10 @@ void build_config(Config *config, const char *key, const char *value) {
 
 void add_defaults(Config *config) {
     config->csv_delimiter = ',';
+    config->input_filename_SNR = NULL;
+
     config->title_input = "Noisy image";
+    config->title_SNR = "SNR map";
     config->title_Gaussian = "Gaussian noise map estimation";
     config->title_Rician = "Rician noise map estimation";
 }

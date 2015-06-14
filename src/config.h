@@ -20,11 +20,14 @@ typedef struct _Config {
     double lpf_f_Rice;
 
     char csv_delimiter;
+
     char *input_filename;
+    char *input_filename_SNR;
     char *output_filename_Gaussian;
     char *output_filename_Rician;
 
     char *title_input;
+    char *title_SNR;
     char *title_Gaussian;
     char *title_Rician;
 } Config;
