@@ -93,7 +93,7 @@ Image *read_csv_data(const char *filename, const Config *config) {
             char *rest = line;
 
             for(size_t j = 0; j < width; ++j) {
-                double d = strtof(rest, NULL);
+                double d = strtod(rest, NULL);
                 cvSet2D(data, i, j, cvScalar(d, 0, 0, 0));
 #ifdef DEBUG
                 sum += d;
