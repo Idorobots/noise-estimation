@@ -63,3 +63,58 @@ Available configuration options (usabe via configuration file):
 - **title_SNR** - optional, specifies the title for the GUI window containing the SNR map,
 - **title_Gaussian** - optional, specifies the title for the GUI window containing the gaussian noise estimation map,
 - **title_Rician** - optional, specifies the title for the GUI window containing the rician noise estimation map,
+
+# Algorithm timings
+The following timings were captured on a machine with the following specifications:
+```
+OS:     Arch Linux
+Kernel: x86_64 Linux 4.0.5-1-ARCH
+Shell:  bash 4.3.39
+RAM:    3734MB
+CPU:    Intel Pentium CPU B950 @ 2.1GHz
+```
+
+Each test has been run with the following command (after appropriately adjusting the configuration file):
+```
+$ ./ne --time 50 config.conf
+```
+
+## Timings for local mean & known SNR:
+```
+Running 50 tests:
+  Total time:   4839.618000 ms
+  Average time: 96.792360 ms
+  Maximal time: 100.426000 ms
+  Minimal time: 95.940000 ms
+```
+
+## Timings for local mean & estimated SNR:
+```
+Running 50 tests:
+  Total time:   25513.269000 ms
+  Average time: 510.265380 ms
+  Maximal time: 514.624000 ms
+  Minimal time: 508.351000 ms
+```
+
+## Timings for expectation maximization & known SNR:
+```
+Running 50 tests:
+  Total time:   24351.625000 ms
+  Average time: 487.032500 ms
+  Maximal time: 493.993000 ms
+  Minimal time: 485.619000 ms
+```
+
+## Timings for expectation maximizations & estimated SNR:
+```
+Running 50 tests:
+  Total time:   25454.011000 ms
+  Average time: 509.080220 ms
+  Maximal time: 538.543000 ms
+  Minimal time: 506.466000 ms
+```
+
+# Known issues
+
+- Modified Bessel function implementation used in this project is fairly inaccurate and leads to larger errors in the expectation maximization case.
