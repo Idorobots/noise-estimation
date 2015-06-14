@@ -196,7 +196,7 @@ IplImage *apply_color_map(const Image *image, int colormap) {
         size_t height = image->rows;
 
         for(size_t i = 0; i < height; ++i) {
-            for(size_t j = 0; j < height; ++j) {
+            for(size_t j = 0; j < width; ++j) {
                 cvSet2D(output, i, j, jet(cvmGet(image, i, j)));
             }
         }

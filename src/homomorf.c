@@ -3,7 +3,7 @@
 void smooth_mean(const Image *input, Image *output, size_t size) {
     size_t width = input->cols + size;
     size_t height = input->rows + size;
-    size_t border_size = floor(size / 2);
+    size_t border_size = size / 2;
 
     Image *border = cvCreateMat(width, height, IMAGE_DEPTH);
     CvPoint offset = cvPoint(border_size, border_size);
@@ -50,8 +50,6 @@ Image *gaussian_kernel(size_t width, size_t height, double sigma) {
 }
 
 void lpf(const Image *input, Image *output, double sigma) {
-    // TODO FFT?
-
     Image *dct = cvCloneMat(input);
     cvDCT(input, dct, CV_DXT_FORWARD);
 
