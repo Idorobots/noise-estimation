@@ -118,7 +118,7 @@ int write_csv_data(const char *filename, const Image *image, const Config *confi
 
     for(size_t i = 0; i < height; ++i) {
         for(size_t j = 0; j < width; ++j) {
-            fprintf(file, "%f", cvmGet(image, i, j));
+            fprintf(file, "%.15lf", cvmGet(image, i, j));
 
             if(j < width-1) {
                 fprintf(file, "%c ", config->csv_delimiter);
