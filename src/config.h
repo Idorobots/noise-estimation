@@ -11,6 +11,8 @@
 
 
 typedef struct _Config {
+    size_t smooth_window_size;
+
     size_t ex_filter_type;
     size_t ex_window_size;
     size_t ex_iterations;

@@ -31,6 +31,8 @@ char *parse_string(const char *string) {
 void build_config(Config *config, const char *key, const char *value) {
     if(strcmp(key, "ex_filter_type") == 0) {
         config->ex_filter_type = atoi(value);
+    } else if(strcmp(key, "smooth_window_size") == 0) {
+        config->smooth_window_size = atoi(value);
     } else if(strcmp(key, "ex_window_size") == 0) {
         config->ex_window_size = atoi(value);
     } else if(strcmp(key, "ex_iterations") == 0) {
@@ -69,6 +71,7 @@ void build_config(Config *config, const char *key, const char *value) {
 }
 
 void add_defaults(Config *config) {
+    config->smooth_window_size = 5;
     config->csv_delimiter = ',';
     config->input_filename_SNR = NULL;
 

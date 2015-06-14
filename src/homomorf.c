@@ -87,7 +87,7 @@ void lpf(const Image *input, Image *output, double sigma) {
 
 int homomorf_gauss(const Image *input, Image **output, const Config *config) {
     Image *mean = cvCloneMat(input);
-    smooth_mean(input, mean, config->ex_window_size);
+    smooth_mean(input, mean, config->smooth_window_size);
 
     Image *diff = cvCloneMat(input);
     cvAbsDiff(input, mean, diff);
@@ -412,7 +412,7 @@ int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Co
 
     if(config->ex_filter_type == 1) {
         // Local mean.
-        smooth_mean(input, mean, config->ex_window_size);
+        smooth_mean(input, mean, config->smooth_window_size);
     } else if(config->ex_filter_type > 2) {
         printf("ERROR: Unknown filter type: %ld.\n", config->ex_filter_type);
         return -1;
