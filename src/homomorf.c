@@ -128,22 +128,128 @@ void clamp_lower(const Image *input, Image *output, double value) {
     cvReleaseMat(&mask);
 }
 
-void besseli_approx(const Image *input, const Image *mean, const Image *sigma, Image *output) {
+double besseli0(double x) {
+    double ax = fabs(x);
+    double ans, y;
 
-    Image *mul = cvCloneMat(input);
-    cvMul(mean, input, mul, 1.0);
+    if (ax < 3.75) {
+        y = x / 3.75;
+        y = y * y;
+        ans = 1.0+y*(3.5156229+y*(3.0899424+y*(1.2067492+y*(0.2659732+y*(0.360768e-1+y*0.45813e-2)))));
+    } else {
+        y = 3.75 / ax;
+        ans = (exp(ax)/sqrt(ax))*(0.39894228+y*(0.1328592e-1+y*(0.225319e-2+y*(-0.157565e-2+y*(0.916281e-2+y*(-0.2057706e-1+y*(0.2635537e-1+y*(-0.1647633e-1+y*0.392377e-2))))))));
+    }
+    return ans;
+}
 
-    Image *div = cvCloneMat(input);
-    cvDiv(mul, sigma, div, 1.0);
+double besseli1(double x) {
+    double ax = fabs(x);
+    double ans, y;
 
-    Image *besseli = cvCloneMat(input);
-    // TODO Implement besseli approximation
+    if (ax < 3.75) {
+        y = x/3.75;
+        y = y*y;
+        ans=ax*(0.5+y*(0.87890594+y*(0.51498869+y*(0.15084934+y*(0.2658733e-1+y*(0.301532e-2+y*0.32411e-3))))));
+    } else {
+        y = 3.75 / ax;
+        ans = 0.2282967e-1+y*(-0.2895312e-1+y*(0.1787654e-1-y*0.420059e-2));
+        ans = 0.39894228+y*(-0.3988024e-1+y*(-0.362018e-2+y*(0.163801e-2+y*(-0.1031555e-1+y*ans))));
+        ans *= (exp(ax)/sqrt(ax));
+    }
+    return x < 0.0 ? -ans : ans;
+}
 
-    cvMul(besseli, input, output, 1.0);
+void divide(const Image *input1, const Image *input2, Image *output, double scale) {
+    // NOTE Nonsaturating element-wise division.
+    size_t width = input2->cols;
+    size_t height = input2->rows;
 
-    cvReleaseMat(&besseli);
-    cvReleaseMat(&mul);
-    cvReleaseMat(&div);
+    for(size_t i = 0; i < height; ++i) {
+        for(size_t j = 0; j < width; ++j) {
+            double value1 = input1 == NULL ? 1.0 : cvGet2D(input1, i, j).val[0];
+            double value2 = cvGet2D(input2, i, j).val[0];
+            cvSet2D(output, i, j, cvScalar(scale * value1 / value2, 0, 0, 0));
+        }
+    }
+}
+
+void bessel_approx(const Image *input, const Image *mean, const Image *sigma, Image *output) {
+    Image *pre_z = cvCloneMat(input);
+    cvMul(mean, input, pre_z, 1.0);
+
+    Image *z = cvCloneMat(input);
+    cvDiv(pre_z, sigma, z, 1.0);
+
+    Image *eight = cvCloneMat(input);
+    cvScale(z, eight, 8.0, 0);
+
+    Image *square = cvCloneMat(input);
+    cvMul(eight, eight, square, 1.0);
+
+    Image *cube = cvCloneMat(input);
+    cvMul(square, eight, cube, 1.0);
+
+    Image *a = cvCloneMat(input);
+    Image *b = cvCloneMat(input);
+    Image *c = cvCloneMat(input);
+    Image *d = cvCloneMat(input);
+
+    cvSet(a, cvScalar(1.0, 0, 0, 0), NULL);
+    divide(NULL, eight, b, -3.0);
+    divide(NULL, square, c, -7.5);
+    divide(NULL, cube, d, -52.5);
+
+    Image *numerator = cvCloneMat(input);
+    cvAdd(a, b, numerator, NULL);
+    cvAdd(numerator, c, b, NULL);
+    cvAdd(b, d, numerator, NULL);
+
+    Image *denominator = cvCloneMat(input);
+    divide(NULL, eight, b, 1.0);
+    divide(NULL, square, c, 4.5);
+    divide(NULL, cube, d, 37.5);
+
+    cvAdd(a, b, denominator, NULL);
+    cvAdd(denominator, c, b, NULL);
+    cvAdd(b, d, denominator, NULL);
+
+    Image *bessel = cvCloneMat(input);
+    divide(numerator, denominator, bessel, 1.0);
+
+    cvReleaseMat(&a);
+    cvReleaseMat(&b);
+    cvReleaseMat(&c);
+    cvReleaseMat(&d);
+    cvReleaseMat(&numerator);
+    cvReleaseMat(&denominator);
+
+    size_t width = input->cols;
+    size_t height = input->rows;
+
+    for(size_t i = 0; i < height; ++i) {
+        for(size_t j = 0; j < width; ++j) {
+            double value = cvGet2D(z, i, j).val[0];
+            if(value < 1.5) {
+                CvScalar b = cvScalar(besseli1(value) / besseli0(value), 0, 0, 0);
+                cvSet2D(bessel, i, j, b);
+            }
+        }
+    }
+
+    CvSize size = cvGetSize(input);
+    Image *mask = cvCreateMat(size.width, size.height, CV_8U);
+    cvCmpS(z, 0.0, mask, CV_CMP_EQ);
+    cvSet(bessel, cvScalar(0, 0, 0, 0), mask);
+
+    cvMul(bessel, input, output, 1.0);
+
+    cvReleaseMat(&bessel);
+    cvReleaseMat(&numerator);
+    cvReleaseMat(&denominator);
+    cvReleaseMat(&eight);
+    cvReleaseMat(&z);
+    cvReleaseMat(&pre_z);
 }
 
 void em_mean(const Image *image, Image *mean, Image *sigma, size_t size, size_t iterations) {
@@ -179,6 +285,11 @@ void em_mean(const Image *image, Image *mean, Image *sigma, size_t size, size_t 
     clamp_lower(diff, max, 0.01);
     cvScale(max, sigma_k, 0.5, 0);
 
+#ifdef DEBUG
+    printf("sum(mean_k): %lf\n", cvSum(mean_k).val[0]);
+    printf("sum(sigma_k): %lf\n", cvSum(sigma_k).val[0]);
+#endif
+
     cvReleaseMat(&quad_f);
     cvReleaseMat(&quad);
     cvReleaseMat(&dssf);
@@ -191,7 +302,7 @@ void em_mean(const Image *image, Image *mean, Image *sigma, size_t size, size_t 
 
     while(iterations --> 0) {
         // Mean
-        besseli_approx(image, mean_k, sigma_k, approx);
+        bessel_approx(image, mean_k, sigma_k, approx);
         smooth_mean(approx, smooth, size);
         clamp_lower(smooth, mean_k, 0.0);
 
@@ -201,6 +312,10 @@ void em_mean(const Image *image, Image *mean, Image *sigma, size_t size, size_t 
         cvScale(diff, half, 0.5, 0);
         clamp_lower(half, sigma_k, 0.01);
 
+#ifdef DEBUG
+        printf("sum(mean_k): %lf\n", cvSum(mean_k).val[0]);
+        printf("sum(sigma_k): %lf\n", cvSum(sigma_k).val[0]);
+#endif
     }
     cvReleaseMat(&smooth);
     cvReleaseMat(&approx);
@@ -209,6 +324,12 @@ void em_mean(const Image *image, Image *mean, Image *sigma, size_t size, size_t 
 
     cvPow(sigma_k, sigma, 0.5);
     cvCopy(mean_k, mean, NULL);
+
+#ifdef DEBUG
+    printf("sum(mean): %lf\n", cvSum(mean).val[0]);
+    printf("sum(sigma): %lf\n", cvSum(sigma).val[0]);
+    show_image("mean", 100, 500, mean);
+#endif
 
     cvReleaseMat(&sigma_k);
     cvReleaseMat(&mean_k);
