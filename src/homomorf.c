@@ -282,8 +282,8 @@ void em_mean(const Image *image, Image *mean, Image *sigma, size_t size, size_t 
     cvScale(max, sigma_k, 0.5, 0);
 
 #ifdef DEBUG
-    printf("sum(mean_k): %lf\n", cvSum(mean_k).val[0]);
-    printf("sum(sigma_k): %lf\n", cvSum(sigma_k).val[0]);
+    printf("sum(mean_k): %.15lf\n", checksum(mean_k));
+    printf("sum(sigma_k): %.15lf\n", checksum(sigma_k));
 #endif
 
     cvReleaseMat(&quad_f);
@@ -309,8 +309,8 @@ void em_mean(const Image *image, Image *mean, Image *sigma, size_t size, size_t 
         clamp_lower(half, sigma_k, 0.01);
 
 #ifdef DEBUG
-        printf("sum(mean_k): %lf\n", cvSum(mean_k).val[0]);
-        printf("sum(sigma_k): %lf\n", cvSum(sigma_k).val[0]);
+        printf("sum(mean_k): %.15lf\n", checksum(mean_k));
+        printf("sum(sigma_k): %.15lf\n", checksum(sigma_k));
 #endif
     }
     cvReleaseMat(&smooth);
@@ -322,8 +322,8 @@ void em_mean(const Image *image, Image *mean, Image *sigma, size_t size, size_t 
     cvCopy(mean_k, mean, NULL);
 
 #ifdef DEBUG
-    printf("sum(mean): %lf\n", cvSum(mean).val[0]);
-    printf("sum(sigma): %lf\n", cvSum(sigma).val[0]);
+    printf("sum(mean): %.15lf\n", checksum(mean));
+    printf("sum(sigma): %.15lf\n", checksum(sigma));
     show_image("mean", 100, 500, mean);
 #endif
 
@@ -382,7 +382,7 @@ void correct_rice(const Image *image, const Image *SNR, Image *correct) {
     cvSub(image, fc, correct, NULL);
 
 #ifdef DEBUG
-    printf("sum(fc): %lf\n", cvSum(fc).val[0]);
+    printf("sum(fc): %.15lf\n", checksum(fc));
     show_image("Corrected", 700, 500, correct);
 #endif
 

@@ -13,5 +13,6 @@
 char *trim(char *str);
 char *split(char *string, char delimiter);
 CvMat *normalize(const CvMat *data);
+double checksum(const CvMat *data);
 
 #endif
