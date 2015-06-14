@@ -124,9 +124,10 @@ void clamp_lower(const Image *input, Image *output, double value) {
     cvReleaseMat(&mask);
 }
 
-double besseli0(double x) {
-    double ax = fabs(x);
-    double ans, y;
+// NOTE These two were shamelessly stolen from a copy of Numerical Recipes in C.
+long double besseli0(double x) {
+    long double ax = fabs(x);
+    long double ans, y;
 
     if (ax < 3.75) {
         y = x / 3.75;
@@ -139,9 +140,9 @@ double besseli0(double x) {
     return ans;
 }
 
-double besseli1(double x) {
-    double ax = fabs(x);
-    double ans, y;
+long double besseli1(double x) {
+    long double ax = fabs(x);
+    long double ans, y;
 
     if (ax < 3.75) {
         y = x/3.75;
