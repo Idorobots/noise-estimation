@@ -189,9 +189,11 @@ double jet_base(double val) {
 CvScalar jet(double gray) {
     // NOTE OpenCV stores pixels as BGR not RGB.
     CvScalar ret = {
-        jet_base(gray + 0.25),
-        jet_base(gray),
-        jet_base(gray - 0.25)
+        .val = {
+            jet_base(gray + 0.25),
+            jet_base(gray),
+            jet_base(gray - 0.25)
+        }
     };
 
     return ret;
