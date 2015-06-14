@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "config.h"
 #include "image.h"
@@ -37,7 +38,13 @@ int run(const Config *config, const Options *options) {
 
     Image *rician = NULL, *gaussian = NULL;
 
-    if(homomorf_est(input, &SNR, &rician, &gaussian, config) == -1) {
+    clock_t diff, start = clock();
+    int ret = homomorf_est(input, &SNR, &rician, &gaussian, config);
+    diff = clock() - start;
+
+    printf("Execution time: %d ms\n", diff * 1000 / CLOCKS_PER_SEC);
+
+    if(ret == -1) {
         printf("ERROR: Error while processing input file %s.\n", config->input_filename);
         return EXIT_FAILURE;
     }
