@@ -14,7 +14,7 @@
 #include "utils.h"
 
 
-#define IMAGE_DEPTH CV_32F
+#define IMAGE_DEPTH CV_64F
 
 #define COLORMAP_GRAYSCALE 0
 #define COLORMAP_JET 1

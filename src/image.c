@@ -186,11 +186,11 @@ CvScalar jet(double gray) {
 
 IplImage *apply_color_map(const Image *image, int colormap) {
     if(colormap == COLORMAP_GRAYSCALE) {
-        IplImage *output = cvCreateImage(cvGetSize(image), IPL_DEPTH_32F, 1);
+        IplImage *output = cvCreateImage(cvGetSize(image), IPL_DEPTH_64F, 1);
         cvGetImage(image, output);
         return cvCloneImage(output);
     } else if(colormap == COLORMAP_JET) {
-        IplImage *output = cvCreateImage(cvGetSize(image), IPL_DEPTH_32F, 3);
+        IplImage *output = cvCreateImage(cvGetSize(image), IPL_DEPTH_64F, 3);
 
         size_t width = image->cols;
         size_t height = image->rows;
