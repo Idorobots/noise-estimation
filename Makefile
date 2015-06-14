@@ -3,6 +3,7 @@ CC = gcc
 #DEBUG = -DDEBUG
 CFLAGS = $(DEBUG) -Isrc -Wall -Wextra -pedantic -std=c99
 LDLIBS = -lm -lopencv_core -lopencv_highgui -lopencv_imgproc
+GDB = -ggdb3
 
 VPATH = src
 
@@ -18,7 +19,7 @@ $(TARGET): $(OBJS)
 	 $(CC) $^ $(LDLIBS) -o$@
 
 %.o: %.c
-	$(CC) $(CFLAGS) $^ -c
+	$(CC) $(GDB) $(CFLAGS) $^ -c
 
 .PHONY: clean run
 

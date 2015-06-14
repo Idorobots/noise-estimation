@@ -11,9 +11,11 @@
 
 
 typedef struct _Config {
-    long ex_filter_type;
-    long ex_window_size;
-    long ex_iterations;
+    size_t smooth_window_size;
+
+    size_t ex_filter_type;
+    size_t ex_window_size;
+    size_t ex_iterations;
 
     double lpf_f;
     double lpf_f_SNR;

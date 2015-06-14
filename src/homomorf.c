@@ -3,7 +3,7 @@
 void smooth_mean(const Image *input, Image *output, size_t size) {
     size_t width = input->cols + size;
     size_t height = input->rows + size;
-    size_t border_size = floor(size / 2);
+    size_t border_size = size / 2;
 
     Image *border = cvCreateMat(width, height, IMAGE_DEPTH);
     CvPoint offset = cvPoint(border_size, border_size);
@@ -33,12 +33,10 @@ Image *gaussian_kernel(size_t width, size_t height, double sigma) {
     Image *kernel = cvCreateMat(width, height, IMAGE_DEPTH);
 
     for(size_t i = 0; i < height; ++i) {
-        double x = i;
-        x -= height/2;
+        double x = (double) i - (height - 1.0)/2.0;
 
         for(size_t j = 0; j < width; ++j) {
-            double y = j;
-            y -= width/2;
+            double y = (double) j - (width - 1.0)/2.0;
 
             double g = exp(-(x*x + y*y)/(2 * sigma * sigma)) / (2 * PI * sigma * sigma);
             cvmSet(kernel, i, j, g);
@@ -52,8 +50,6 @@ Image *gaussian_kernel(size_t width, size_t height, double sigma) {
 }
 
 void lpf(const Image *input, Image *output, double sigma) {
-    // TODO FFT?
-
     Image *dct = cvCloneMat(input);
     cvDCT(input, dct, CV_DXT_FORWARD);
 
@@ -91,7 +87,7 @@ void lpf(const Image *input, Image *output, double sigma) {
 
 int homomorf_gauss(const Image *input, Image **output, const Config *config) {
     Image *mean = cvCloneMat(input);
-    smooth_mean(input, mean, config->ex_window_size);
+    smooth_mean(input, mean, config->smooth_window_size);
 
     Image *diff = cvCloneMat(input);
     cvAbsDiff(input, mean, diff);
@@ -395,29 +391,25 @@ void correct_rice(const Image *image, const Image *SNR, Image *correct) {
     cvReleaseMat(&fc);
 }
 
-int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Config *config) {
-    Image *snr = NULL;
-
-    if(SNR != NULL) {
-        snr = cvCloneMat(SNR);
-    }
-
+int homomorf_rice(const Image *input, Image **SNR, Image **output, const Config *config) {
     Image *mean = cvCloneMat(input);
 
     // NOTE We need to compute EM anyway if SNR is not supplied.
-    if(SNR == NULL || config->ex_filter_type == 2) {
+    if(*SNR == NULL || config->ex_filter_type == 2) {
         // Expectation maximization.
         Image *sigma = cvCloneMat(input);
         em_mean(input, mean, sigma, config->ex_window_size, config->ex_iterations);
 
-        snr = estimated_SNR(mean, sigma, config);
+        if(*SNR == NULL) {
+            *SNR = estimated_SNR(mean, sigma, config);
+        }
         cvReleaseMat(&sigma);
     }
 
     if(config->ex_filter_type == 1) {
         // Local mean.
-        smooth_mean(input, mean, config->ex_window_size);
-    } else {
+        smooth_mean(input, mean, config->smooth_window_size);
+    } else if(config->ex_filter_type > 2) {
         printf("ERROR: Unknown filter type: %ld.\n", config->ex_filter_type);
         return -1;
     }
@@ -433,7 +425,7 @@ int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Co
     lpf(diff_log, filter, config->lpf_f);
 
     Image *correct = cvCloneMat(input);
-    correct_rice(filter, snr, correct);
+    correct_rice(filter, *SNR, correct);
 
     Image *filter2 = cvCloneMat(input);
     lpf(correct, filter2, config->lpf_f_Rice);
@@ -446,7 +438,6 @@ int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Co
 
     cvReleaseMat(&diff_exp);
     cvReleaseMat(&correct);
-    cvReleaseMat(&snr);
     cvReleaseMat(&filter);
     cvReleaseMat(&diff_log);
     cvReleaseMat(&diff);
@@ -454,7 +445,7 @@ int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Co
     return 0;
 }
 
-int homomorf_est(const Image *input, const Image *SNR, Image **rician_map, Image **gaussian_map, const Config *config) {
+int homomorf_est(const Image *input, Image **SNR, Image **rician_map, Image **gaussian_map, const Config *config) {
     if(homomorf_gauss(input, gaussian_map, config) == -1) {
         printf("ERROR: Couldn't compute the Gaussian map.\n");
         return -1;

@@ -118,7 +118,7 @@ int write_csv_data(const char *filename, const Image *image, const Config *confi
 
     for(size_t i = 0; i < height; ++i) {
         for(size_t j = 0; j < width; ++j) {
-            fprintf(file, "%f", cvmGet(image, i, j));
+            fprintf(file, "%.15lf", cvmGet(image, i, j));
 
             if(j < width-1) {
                 fprintf(file, "%c ", config->csv_delimiter);
@@ -186,17 +186,17 @@ CvScalar jet(double gray) {
 
 IplImage *apply_color_map(const Image *image, int colormap) {
     if(colormap == COLORMAP_GRAYSCALE) {
-        IplImage *output = cvCreateImage(cvGetSize(image), IPL_DEPTH_32F, 1);
+        IplImage *output = cvCreateImage(cvGetSize(image), IPL_DEPTH_64F, 1);
         cvGetImage(image, output);
         return cvCloneImage(output);
     } else if(colormap == COLORMAP_JET) {
-        IplImage *output = cvCreateImage(cvGetSize(image), IPL_DEPTH_32F, 3);
+        IplImage *output = cvCreateImage(cvGetSize(image), IPL_DEPTH_64F, 3);
 
         size_t width = image->cols;
         size_t height = image->rows;
 
         for(size_t i = 0; i < height; ++i) {
-            for(size_t j = 0; j < height; ++j) {
+            for(size_t j = 0; j < width; ++j) {
                 cvSet2D(output, i, j, jet(cvmGet(image, i, j)));
             }
         }

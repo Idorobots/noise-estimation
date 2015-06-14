@@ -12,6 +12,6 @@
 
 #define RICE_CORRECTION_THRESHOLD 7.0
 
-int homomorf_est(const Image *input, const Image *SNR, Image **rician_map, Image **gaussian_map, const Config *config);
+int homomorf_est(const Image *input, Image **SNR, Image **rician_map, Image **gaussian_map, const Config *config);
 
 #endif
