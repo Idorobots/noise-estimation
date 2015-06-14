@@ -9,6 +9,7 @@ $ make clean && make
 ```
 
 The supplied makefile will compile the project. Required tools & libraries:
+- **GNU Make** (tested using GNU Make 4.1),
 - **GCC** (tested using gcc (GCC) *5.1.0*),
 - **OpenCV** (tested with version *2.4.10*)
 - POSIX-compatible OS (tested using Arch w/ *Linux 4.0.5-1-ARCH*).
