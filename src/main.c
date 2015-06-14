@@ -32,9 +32,11 @@ int run(const Config *config, const Options *options) {
     }
 
     Image *SNR = read_image(config->input_filename_SNR, config);
+    int delete_SNR = 0;
 
-    if(!SNR) {
+    if(SNR == NULL) {
         printf("Not using an SNR map.\n");
+        delete_SNR = options->time;
     }
 
     Image *rician = NULL, *gaussian = NULL;
@@ -52,6 +54,15 @@ int run(const Config *config, const Options *options) {
     }
 
     for(size_t i = 0; i < num_times; ++i) {
+        if(rician != NULL) {
+            cvReleaseMat(&rician);
+            cvReleaseMat(&gaussian);
+        }
+
+        if(delete_SNR && SNR != NULL) {
+            cvReleaseMat(&SNR);
+        }
+
         start= clock();
         ret = homomorf_est(input, &SNR, &rician, &gaussian, config);
         diff = clock() - start;
