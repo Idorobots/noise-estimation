@@ -391,22 +391,18 @@ void correct_rice(const Image *image, const Image *SNR, Image *correct) {
     cvReleaseMat(&fc);
 }
 
-int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Config *config) {
-    Image *snr = NULL;
-
-    if(SNR != NULL) {
-        snr = cvCloneMat(SNR);
-    }
-
+int homomorf_rice(const Image *input, Image **SNR, Image **output, const Config *config) {
     Image *mean = cvCloneMat(input);
 
     // NOTE We need to compute EM anyway if SNR is not supplied.
-    if(SNR == NULL || config->ex_filter_type == 2) {
+    if(*SNR == NULL || config->ex_filter_type == 2) {
         // Expectation maximization.
         Image *sigma = cvCloneMat(input);
         em_mean(input, mean, sigma, config->ex_window_size, config->ex_iterations);
 
-        snr = estimated_SNR(mean, sigma, config);
+        if(*SNR == NULL) {
+            *SNR = estimated_SNR(mean, sigma, config);
+        }
         cvReleaseMat(&sigma);
     }
 
@@ -429,7 +425,7 @@ int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Co
     lpf(diff_log, filter, config->lpf_f);
 
     Image *correct = cvCloneMat(input);
-    correct_rice(filter, snr, correct);
+    correct_rice(filter, *SNR, correct);
 
     Image *filter2 = cvCloneMat(input);
     lpf(correct, filter2, config->lpf_f_Rice);
@@ -442,7 +438,6 @@ int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Co
 
     cvReleaseMat(&diff_exp);
     cvReleaseMat(&correct);
-    cvReleaseMat(&snr);
     cvReleaseMat(&filter);
     cvReleaseMat(&diff_log);
     cvReleaseMat(&diff);
@@ -450,7 +445,7 @@ int homomorf_rice(const Image *input, const Image *SNR, Image **output, const Co
     return 0;
 }
 
-int homomorf_est(const Image *input, const Image *SNR, Image **rician_map, Image **gaussian_map, const Config *config) {
+int homomorf_est(const Image *input, Image **SNR, Image **rician_map, Image **gaussian_map, const Config *config) {
     if(homomorf_gauss(input, gaussian_map, config) == -1) {
         printf("ERROR: Couldn't compute the Gaussian map.\n");
         return -1;

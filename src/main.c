@@ -33,19 +33,18 @@ int run(const Config *config, const Options *options) {
 
     if(!SNR) {
         printf("Not using an SNR map.\n");
-    } else if(!options->no_gui) {
-        show_image(config->title_SNR, 100 + width * offset, 100, SNR);
-        ++offset;
     }
 
     Image *rician = NULL, *gaussian = NULL;
 
-    if(homomorf_est(input, SNR, &rician, &gaussian, config) == -1) {
+    if(homomorf_est(input, &SNR, &rician, &gaussian, config) == -1) {
         printf("ERROR: Error while processing input file %s.\n", config->input_filename);
         return EXIT_FAILURE;
     }
 
     if(!options->no_gui) {
+        show_image(config->title_SNR, 100 + width * offset, 100, SNR);
+        ++offset;
         show_image(config->title_Rician, 100 + width * offset, 100, rician);
         ++offset;
         show_image(config->title_Gaussian, 100 + width * offset, 100, gaussian);
