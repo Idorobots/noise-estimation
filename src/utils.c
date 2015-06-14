@@ -66,3 +66,7 @@ CvMat *normalize(const CvMat *data) {
 
     return normalized;
 }
+
+double checksum(const CvMat *data) {
+    return cvSum(data).val[0];
+}

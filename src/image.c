@@ -84,16 +84,29 @@ Image *read_csv_data(const char *filename, const Config *config) {
     size_t num_bytes = 0;
     ssize_t read = 0;
 
+#ifdef DEBUG
+    double sum = 0;
+#endif
+
     for(size_t i = 0; i < height; ++i) {
         if((read = getline(&line, &num_bytes, file)) != -1) {
             char *rest = line;
 
             for(size_t j = 0; j < width; ++j) {
-                cvmSet(data, i, j, strtof(rest, NULL));
+                double d = strtod(rest, NULL);
+                cvSet2D(data, i, j, cvScalar(d, 0, 0, 0));
+#ifdef DEBUG
+                sum += d;
+#endif
                 rest = trim(split(rest, config->csv_delimiter));
             }
         }
     }
+
+#ifdef DEBUG
+    printf("sum(csv): %.15lf\n", sum);
+    printf("sum(input): %.15lf\n", checksum(data));
+#endif
 
     free(line);
     fclose(file);
@@ -226,7 +239,7 @@ void print_image(const Image *image) {
 
     for(size_t i = 0; i < height; ++i) {
         for(size_t j = 0; j < width; ++j) {
-            printf("%.4lf ", cvmGet(image, i, j));
+            printf("%.15lf ", cvmGet(image, i, j));
         }
         printf("\n");
     }
