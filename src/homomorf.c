@@ -33,12 +33,10 @@ Image *gaussian_kernel(size_t width, size_t height, double sigma) {
     Image *kernel = cvCreateMat(width, height, IMAGE_DEPTH);
 
     for(size_t i = 0; i < height; ++i) {
-        double x = i;
-        x -= height/2;
+        double x = (double) i - (height - 1.0)/2.0;
 
         for(size_t j = 0; j < width; ++j) {
-            double y = j;
-            y -= width/2;
+            double y = (double) j - (width - 1.0)/2.0;
 
             double g = exp(-(x*x + y*y)/(2 * sigma * sigma)) / (2 * PI * sigma * sigma);
             cvmSet(kernel, i, j, g);
