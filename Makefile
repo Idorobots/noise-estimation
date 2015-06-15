@@ -1,9 +1,9 @@
 RM = rm -f
 CC = gcc
 #DEBUG = -DDEBUG
-CFLAGS = $(DEBUG) -Isrc -Wall -Wextra -pedantic -std=c99
+CFLAGS = $(DEBUG) -Isrc -Wall -Wextra -pedantic -std=c99 -Ofast
 LDLIBS = -lm -lopencv_core -lopencv_highgui -lopencv_imgproc
-GDB = -ggdb3
+#GDB = -ggdb3
 
 VPATH = src
 
