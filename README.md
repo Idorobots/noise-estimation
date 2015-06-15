@@ -83,37 +83,37 @@ $ ./ne --time 50 config.conf
 ## Timings for local mean & known SNR:
 ```
 Running 50 tests:
-  Total time:   4839.618000 ms
-  Average time: 96.792360 ms
-  Maximal time: 100.426000 ms
-  Minimal time: 95.940000 ms
+  Total time:   3159.140000 ms
+  Average time: 63.182800 ms
+  Maximal time: 66.875000 ms
+  Minimal time: 62.418000 ms
 ```
 
 ## Timings for local mean & estimated SNR:
 ```
 Running 50 tests:
-  Total time:   25513.269000 ms
-  Average time: 510.265380 ms
-  Maximal time: 514.624000 ms
-  Minimal time: 508.351000 ms
+  Total time:   19067.734000 ms
+  Average time: 381.354680 ms
+  Maximal time: 387.622000 ms
+  Minimal time: 379.153000 ms
 ```
 
 ## Timings for expectation maximization & known SNR:
 ```
 Running 50 tests:
-  Total time:   24351.625000 ms
-  Average time: 487.032500 ms
-  Maximal time: 493.993000 ms
-  Minimal time: 485.619000 ms
+  Total time:   18359.728000 ms
+  Average time: 367.194560 ms
+  Maximal time: 375.301000 ms
+  Minimal time: 365.145000 ms
 ```
 
 ## Timings for expectation maximizations & estimated SNR:
 ```
 Running 50 tests:
-  Total time:   25454.011000 ms
-  Average time: 509.080220 ms
-  Maximal time: 538.543000 ms
-  Minimal time: 506.466000 ms
+  Total time:   18943.468000 ms
+  Average time: 378.869360 ms
+  Maximal time: 386.274000 ms
+  Minimal time: 376.519000 ms
 ```
 
 # Known issues
